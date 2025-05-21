@@ -10,18 +10,51 @@ import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/hooks/use-toast";
 
+// Define TypeScript interfaces for our data structure
+interface Review {
+  id: number;
+  author: string;
+  rating: number;
+  date: string;
+  comment: string;
+}
+
+interface Service {
+  name: string;
+  price: string;
+  duration: string;
+}
+
+interface Business {
+  id: string;
+  name: string;
+  category: string;
+  rating: number;
+  reviews: number;
+  image: string;
+  location: string;
+  phone: string;
+  website: string;
+  hours: string;
+  description: string;
+  amenities: string[];
+  services: Service[];
+  gallery: string[];
+  reviewList: Review[]; // Renamed to avoid confusion
+}
+
 const BusinessDetails = () => {
   const { id } = useParams();
   const [showFullDescription, setShowFullDescription] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
 
   // Placeholder data for an example business
-  const business = {
+  const business: Business = {
     id: id || "1",
     name: "Namibia Hair Studio",
     category: "Hair Salon",
     rating: 4.7,
-    reviews: 98,
+    reviews: 98, // This is the count of reviews
     image: "https://images.unsplash.com/photo-1560066984-138dadb4c035",
     location: "15 Independence Ave, Windhoek, Namibia",
     phone: "+264 61 123 4567",
@@ -41,7 +74,7 @@ const BusinessDetails = () => {
       "https://images.unsplash.com/photo-1562322140-8baeececf3df",
       "https://images.unsplash.com/photo-1522337660859-02fbefca4702",
     ],
-    reviews: [
+    reviewList: [ // Renamed from 'reviews' to avoid property name conflict
       {
         id: 1,
         author: "Maria N.",
@@ -272,7 +305,7 @@ const BusinessDetails = () => {
               </div>
               
               <div className="divide-y">
-                {business.reviews.map((review) => (
+                {business.reviewList.map((review) => (
                   <div key={review.id} className="p-4">
                     <div className="flex justify-between items-start">
                       <h4 className="font-medium">{review.author}</h4>
