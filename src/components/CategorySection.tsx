@@ -1,13 +1,13 @@
 
 import { Link } from "react-router-dom";
-import { Restaurant, Scissors, Home, Bell, Car, Cleaning, Star } from "lucide-react";
+import { UtensilsCrossed, Scissors, Home, Bell, Car, Paintbrush, Star } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 
 const categories = [
   {
     id: 1,
     name: "Restaurants",
-    icon: Restaurant,
+    icon: UtensilsCrossed,
     color: "bg-afro-orange",
     items: 325,
     link: "/categories/restaurants",
@@ -47,7 +47,7 @@ const categories = [
   {
     id: 6,
     name: "Cleaning",
-    icon: Cleaning,
+    icon: Paintbrush,
     color: "bg-afro-green",
     items: 78,
     link: "/categories/cleaning",
