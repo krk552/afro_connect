@@ -1,0 +1,100 @@
+
+import { Link } from "react-router-dom";
+import { Restaurant, Scissors, Home, Bell, Car, Cleaning, Star } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+
+const categories = [
+  {
+    id: 1,
+    name: "Restaurants",
+    icon: Restaurant,
+    color: "bg-afro-orange",
+    items: 325,
+    link: "/categories/restaurants",
+  },
+  {
+    id: 2,
+    name: "Hair & Beauty",
+    icon: Scissors,
+    color: "bg-afro-pink",
+    items: 189,
+    link: "/categories/salons",
+  },
+  {
+    id: 3,
+    name: "Home Services",
+    icon: Home,
+    color: "bg-afro-blue",
+    items: 156,
+    link: "/categories/home",
+  },
+  {
+    id: 4,
+    name: "Events",
+    icon: Bell,
+    color: "bg-afro-purple",
+    items: 94,
+    link: "/categories/events",
+  },
+  {
+    id: 5,
+    name: "Auto Services",
+    icon: Car,
+    color: "bg-afro-teal",
+    items: 112,
+    link: "/categories/auto",
+  },
+  {
+    id: 6,
+    name: "Cleaning",
+    icon: Cleaning,
+    color: "bg-afro-green",
+    items: 78,
+    link: "/categories/cleaning",
+  },
+];
+
+const CategorySection = () => {
+  return (
+    <section className="py-16 bg-gray-50">
+      <div className="container mx-auto px-4">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl font-bold mb-4">Explore Categories</h2>
+          <p className="text-muted-foreground max-w-2xl mx-auto">
+            Discover the best local businesses and services across different categories
+          </p>
+        </div>
+
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
+          {categories.map((category) => (
+            <Link to={category.link} key={category.id}>
+              <Card className="card-hover border-0 text-center">
+                <CardContent className="p-6 flex flex-col items-center">
+                  <div className={`category-icon ${category.color} mb-4`}>
+                    <category.icon size={24} />
+                  </div>
+                  <h3 className="font-medium mb-2">{category.name}</h3>
+                  <p className="text-sm text-muted-foreground">
+                    {category.items} listings
+                  </p>
+                </CardContent>
+              </Card>
+            </Link>
+          ))}
+        </div>
+
+        <div className="text-center mt-10">
+          <Link 
+            to="/categories"
+            className="inline-flex items-center text-primary font-medium hover:underline"
+          >
+            View All Categories 
+            <Star className="ml-2 h-4 w-4" />
+          </Link>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+export default CategorySection;
