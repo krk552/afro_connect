@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { UtensilsCrossed, Scissors, Home, Bell, Car, Paintbrush, Star } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 
-const categories = [
+export const categories = [
   {
     id: 1,
     name: "Restaurants",
@@ -56,24 +56,24 @@ const categories = [
 
 const CategorySection = () => {
   return (
-    <section className="py-16 bg-gray-50">
+    <section className="py-12 md:py-16 bg-gray-50">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold mb-4">Explore Categories</h2>
+        <div className="text-center mb-8 md:mb-12">
+          <h2 className="text-2xl md:text-3xl font-bold mb-3 md:mb-4">Explore Categories</h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
             Discover the best local businesses and services across different categories
           </p>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
           {categories.map((category) => (
             <Link to={category.link} key={category.id}>
-              <Card className="card-hover border-0 text-center">
-                <CardContent className="p-6 flex flex-col items-center">
-                  <div className={`category-icon ${category.color} mb-4`}>
+              <Card className="card-hover border-0 text-center h-full">
+                <CardContent className="p-4 flex flex-col items-center justify-center h-full">
+                  <div className={`category-icon ${category.color} mb-3`}>
                     <category.icon size={24} />
                   </div>
-                  <h3 className="font-medium mb-2">{category.name}</h3>
+                  <h3 className="font-medium">{category.name}</h3>
                   <p className="text-sm text-muted-foreground">
                     {category.items} listings
                   </p>
@@ -83,7 +83,7 @@ const CategorySection = () => {
           ))}
         </div>
 
-        <div className="text-center mt-10">
+        <div className="text-center mt-8">
           <Link 
             to="/categories"
             className="inline-flex items-center text-primary font-medium hover:underline"

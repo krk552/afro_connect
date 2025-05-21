@@ -98,6 +98,12 @@
   h1, h2, h3, h4, h5, h6 {
     @apply font-display;
   }
+
+  /* Mobile-first Optimizations */
+  html, body {
+    @apply max-w-full overflow-x-hidden;
+    -webkit-tap-highlight-color: transparent;
+  }
 }
 
 @layer components {
@@ -115,5 +121,30 @@
 
   .search-input {
     @apply w-full py-3 px-4 rounded-full bg-white shadow-md focus:outline-none focus:ring-2 focus:ring-primary;
+  }
+
+  /* Mobile-specific Components */
+  .bottom-nav-link {
+    @apply flex flex-col items-center justify-center w-full text-xs;
+  }
+
+  .mobile-menu-item {
+    @apply flex items-center w-full p-3 rounded-md hover:bg-gray-100;
+  }
+
+  /* Better touch targets for mobile */
+  .mobile-touch-target {
+    @apply min-h-[48px] min-w-[48px];
+  }
+}
+
+@media (max-width: 640px) {
+  .container {
+    @apply px-4;
+  }
+  
+  /* Add extra bottom padding to prevent content from being hidden behind the bottom nav */
+  .pb-safe {
+    padding-bottom: calc(env(safe-area-inset-bottom) + 4rem);
   }
 }
