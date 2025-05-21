@@ -18,10 +18,10 @@ import { toast } from "@/hooks/use-toast";
 const UserProfile = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [profileData, setProfileData] = useState({
-    name: "Maria Nangolo",
-    email: "maria.n@example.com",
-    phone: "+264 81 123 4567",
-    location: "Windhoek, Namibia",
+    name: "Demo User",
+    email: "demo@example.com",
+    phone: "+000 00 000 0000",
+    location: "Your Location",
   });
 
   const handleSaveProfile = () => {
@@ -163,7 +163,7 @@ const UserProfile = () => {
                           <p className="text-sm text-muted-foreground">View your scheduled appointments</p>
                         </div>
                       </div>
-                      <div>2</div>
+                      <div>0</div>
                     </CardContent>
                   </Card>
                 </Link>
@@ -177,7 +177,7 @@ const UserProfile = () => {
                         <p className="text-sm text-muted-foreground">View your booking history</p>
                       </div>
                     </div>
-                    <div>8</div>
+                    <div>0</div>
                   </CardContent>
                 </Card>
               </div>

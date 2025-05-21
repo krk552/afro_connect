@@ -1,9 +1,6 @@
-
 import { useState } from "react";
-import { Link } from "react-router-dom";
-import { MapPin, Star, Filter, List, LayoutGrid } from "lucide-react";
+import { Building2, Filter, List, LayoutGrid } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { 
   Select, 
@@ -18,159 +15,8 @@ const BusinessListing = () => {
   const [sortBy, setSortBy] = useState("relevance");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   
-  // Placeholder data
-  const businesses = [
-    {
-      id: 1,
-      name: "Namibia Hair Studio",
-      category: "Hair Salon",
-      rating: 4.7,
-      reviews: 98,
-      image: "https://images.unsplash.com/photo-1560066984-138dadb4c035",
-      location: "Independence Ave, Windhoek",
-      distance: "1.2 km",
-    },
-    {
-      id: 2,
-      name: "Peach Tree Restaurant",
-      category: "Restaurant",
-      rating: 4.5,
-      reviews: 124,
-      image: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5",
-      location: "Sam Nujoma Dr, Windhoek",
-      distance: "0.8 km",
-    },
-    {
-      id: 3,
-      name: "Clean & Clear Services",
-      category: "Cleaning",
-      rating: 4.3,
-      reviews: 67,
-      image: "https://images.unsplash.com/photo-1581578731548-c64695cc6952",
-      location: "Robert Mugabe Ave, Windhoek",
-      distance: "1.5 km",
-    },
-    {
-      id: 4,
-      name: "AutoFix Garage",
-      category: "Auto Services",
-      rating: 4.6,
-      reviews: 53,
-      image: "https://images.unsplash.com/photo-1619642751034-765dfdf7c58e",
-      location: "Independence Ave, Windhoek",
-      distance: "2.3 km",
-    },
-    {
-      id: 5,
-      name: "Savanna Cafe",
-      category: "Restaurant",
-      rating: 4.8,
-      reviews: 112,
-      image: "https://images.unsplash.com/photo-1554118811-1e0d58224f24",
-      location: "Mandume Ndemufayo Ave, Windhoek",
-      distance: "1.7 km",
-    },
-    {
-      id: 6,
-      name: "Tech Repairs",
-      category: "Electronics",
-      rating: 4.2,
-      reviews: 45,
-      image: "https://images.unsplash.com/photo-1588702547919-26089e690ecc",
-      location: "Hosea Kutako Dr, Windhoek",
-      distance: "3.1 km",
-    },
-  ];
-
-  const renderGridView = () => (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-      {businesses.map((business) => (
-        <Link to={`/business/${business.id}`} key={business.id}>
-          <Card className="card-hover overflow-hidden h-full">
-            <div className="relative h-48">
-              <img
-                src={business.image}
-                alt={business.name}
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute top-0 left-0 bg-primary text-white text-xs font-medium m-2 px-2 py-1 rounded-full">
-                {business.category}
-              </div>
-            </div>
-            
-            <CardContent className="p-4">
-              <div className="flex justify-between items-start">
-                <h2 className="font-bold">{business.name}</h2>
-                <div className="flex items-center">
-                  <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
-                  <span className="ml-1 font-medium">{business.rating}</span>
-                </div>
-              </div>
-              
-              <div className="flex items-center text-sm text-muted-foreground mt-1">
-                <MapPin className="h-3 w-3 mr-1" />
-                <span>{business.location}</span>
-              </div>
-              
-              <div className="mt-3 flex items-center justify-between">
-                <span className="text-xs text-muted-foreground">
-                  {business.reviews} reviews
-                </span>
-                <span className="text-xs">{business.distance}</span>
-              </div>
-            </CardContent>
-          </Card>
-        </Link>
-      ))}
-    </div>
-  );
-
-  const renderListView = () => (
-    <div className="space-y-4">
-      {businesses.map((business) => (
-        <Link to={`/business/${business.id}`} key={business.id}>
-          <Card className="card-hover overflow-hidden">
-            <div className="flex flex-col sm:flex-row">
-              <div className="w-full sm:w-40 h-32 relative">
-                <img
-                  src={business.image}
-                  alt={business.name}
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute top-0 left-0 bg-primary text-white text-xs font-medium m-2 px-2 py-1 rounded-full">
-                  {business.category}
-                </div>
-              </div>
-              
-              <CardContent className="p-4 flex-1">
-                <div className="flex justify-between">
-                  <h2 className="font-bold">{business.name}</h2>
-                  <div className="flex items-center">
-                    <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
-                    <span className="ml-1 font-medium">{business.rating}</span>
-                    <span className="text-muted-foreground ml-1">({business.reviews})</span>
-                  </div>
-                </div>
-                
-                <div className="flex items-center text-sm text-muted-foreground mt-1">
-                  <MapPin className="h-3 w-3 mr-1" />
-                  <span>{business.location}</span>
-                  <span className="mx-1">•</span>
-                  <span>{business.distance}</span>
-                </div>
-                
-                <div className="mt-2">
-                  <Button variant="link" className="p-0 h-auto text-sm">
-                    Book Now
-                  </Button>
-                </div>
-              </CardContent>
-            </div>
-          </Card>
-        </Link>
-      ))}
-    </div>
-  );
+  // Empty businesses array
+  const businesses: any[] = [];
 
   return (
     <div className="pt-16 pb-24">
@@ -336,10 +182,17 @@ const BusinessListing = () => {
           </Card>
         )}
 
-        {view === "grid" ? renderGridView() : renderListView()}
-        
-        <div className="mt-8 flex justify-center">
-          <Button variant="outline">Load More</Button>
+        <div className="text-center py-12">
+          <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto">
+            <Building2 className="h-8 w-8 text-muted-foreground" />
+          </div>
+          <h2 className="mt-4 text-xl font-medium">No businesses found</h2>
+          <p className="mt-2 text-muted-foreground">
+            There are no businesses registered yet. Check back later or be the first to register.
+          </p>
+          <Button className="mt-6" asChild>
+            <a href="/business-registration">Register Your Business</a>
+          </Button>
         </div>
       </div>
     </div>
