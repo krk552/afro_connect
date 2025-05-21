@@ -1,6 +1,6 @@
 
 import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Award, Users, Globe, Shield, MapPin } from "lucide-react";
 
 const AboutPage = () => {
