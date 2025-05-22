@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Building2, Filter, List, LayoutGrid } from "lucide-react";
+import { Building2, Filter, List, LayoutGrid, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -17,7 +17,7 @@ const BusinessListing = () => {
   const [sortBy, setSortBy] = useState("relevance");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   
-  // Empty businesses array
+  // Empty businesses array - ensuring no mock data
   const businesses: any[] = [];
 
   return (
@@ -186,14 +186,14 @@ const BusinessListing = () => {
 
         <div className="text-center py-12">
           <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto">
-            <Building2 className="h-8 w-8 text-muted-foreground" />
+            <MapPin className="h-8 w-8 text-muted-foreground" />
           </div>
-          <h2 className="mt-4 text-xl font-medium">No businesses found</h2>
+          <h2 className="mt-4 text-xl font-medium">No businesses available yet</h2>
           <p className="mt-2 text-muted-foreground">
-            There are no businesses registered yet. Check back later or be the first to register.
+            Be the first to register your business on AfroBiz Connect and connect with local customers.
           </p>
           <Button className="mt-6" asChild>
-            <a href="/business-registration">Register Your Business</a>
+            <a href="/business/register">Register Your Business</a>
           </Button>
         </div>
       </div>

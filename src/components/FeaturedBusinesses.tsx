@@ -1,7 +1,7 @@
 
 import { Link } from "react-router-dom";
 import { Building2, ArrowRight } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
 const FeaturedBusinesses = () => {
@@ -12,7 +12,7 @@ const FeaturedBusinesses = () => {
           <div>
             <h2 className="text-3xl font-bold">Featured Businesses</h2>
             <p className="text-muted-foreground mt-2">
-              Discover top-rated local businesses near you
+              Discover top-rated local businesses in Namibia
             </p>
           </div>
           <Link to="/businesses" className="hidden md:flex items-center text-primary hover:underline">
@@ -24,13 +24,13 @@ const FeaturedBusinesses = () => {
           <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto">
             <Building2 className="h-8 w-8 text-muted-foreground" />
           </div>
-          <h3 className="mt-4 text-xl font-medium">No businesses yet</h3>
+          <h3 className="mt-4 text-xl font-medium">No featured businesses yet</h3>
           <p className="mt-2 text-muted-foreground max-w-md mx-auto">
-            When businesses register on AfroBiz Connect, they will appear here. 
-            Check back soon or encourage businesses to join our platform.
+            When businesses join AfroBiz Connect, the most popular ones will be featured here.
+            Be the first to register your business!
           </p>
           <Button className="mt-6" asChild>
-            <Link to="/business-registration">Register a Business</Link>
+            <Link to="/business/register">Register Your Business</Link>
           </Button>
         </div>
         
