@@ -9,7 +9,6 @@ export const categories = [
     name: "Restaurants",
     icon: UtensilsCrossed,
     color: "bg-afro-orange",
-    items: 325,
     link: "/categories/restaurants",
   },
   {
@@ -17,7 +16,6 @@ export const categories = [
     name: "Hair & Beauty",
     icon: Scissors,
     color: "bg-afro-pink",
-    items: 189,
     link: "/categories/salons",
   },
   {
@@ -25,7 +23,6 @@ export const categories = [
     name: "Home Services",
     icon: Home,
     color: "bg-afro-blue",
-    items: 156,
     link: "/categories/home",
   },
   {
@@ -33,7 +30,6 @@ export const categories = [
     name: "Events",
     icon: Bell,
     color: "bg-afro-purple",
-    items: 94,
     link: "/categories/events",
   },
   {
@@ -41,7 +37,6 @@ export const categories = [
     name: "Auto Services",
     icon: Car,
     color: "bg-afro-teal",
-    items: 112,
     link: "/categories/auto",
   },
   {
@@ -49,7 +44,6 @@ export const categories = [
     name: "Cleaning",
     icon: Paintbrush,
     color: "bg-afro-green",
-    items: 78,
     link: "/categories/cleaning",
   },
 ];
@@ -74,9 +68,7 @@ const CategorySection = () => {
                     <category.icon size={24} />
                   </div>
                   <h3 className="font-medium">{category.name}</h3>
-                  <p className="text-sm text-muted-foreground">
-                    {category.items} listings
-                  </p>
+                  {/* Removed the listing count display */}
                 </CardContent>
               </Card>
             </Link>
