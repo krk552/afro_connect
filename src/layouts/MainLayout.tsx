@@ -6,9 +6,9 @@ import BottomNav from "@/components/BottomNav";
 
 const MainLayout = () => {
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="flex flex-col min-h-screen">
       <Navbar />
-      <main className="flex-grow pt-16">
+      <main className="flex-grow pt-16 md:pt-20">
         <Outlet />
       </main>
       <div className="md:hidden h-16"></div> {/* Spacer for bottom nav on mobile */}
