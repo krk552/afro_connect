@@ -35,7 +35,7 @@ const Hero = () => {
                 <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
                 <input
                   type="text"
-                  placeholder="Search for restaurants, salons, shops..."
+                  placeholder="Search for salons, shops, services..."
                   className="search-input w-full pl-12 py-3 px-4 rounded-full bg-white shadow-md focus:outline-none focus:ring-2 focus:ring-primary"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
@@ -50,13 +50,13 @@ const Hero = () => {
           <div className="mt-6 md:mt-8 flex flex-wrap justify-center gap-2">
             <span className="text-white font-medium mr-1">Popular:</span>
             <Button variant="outline" size="sm" className="rounded-full bg-white/20 text-white hover:bg-white hover:text-afro-orange border-transparent">
-              Restaurants
-            </Button>
-            <Button variant="outline" size="sm" className="rounded-full bg-white/20 text-white hover:bg-white hover:text-afro-orange border-transparent">
               Hair Salons
             </Button>
             <Button variant="outline" size="sm" className="rounded-full bg-white/20 text-white hover:bg-white hover:text-afro-orange border-transparent">
               Cleaning
+            </Button>
+            <Button variant="outline" size="sm" className="rounded-full bg-white/20 text-white hover:bg-white hover:text-afro-orange border-transparent">
+              Home Services
             </Button>
           </div>
         </div>
