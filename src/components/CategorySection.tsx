@@ -1,3 +1,4 @@
+
 import { Link } from "react-router-dom";
 import { Scissors, Home, Bell, Car, Paintbrush, Star } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -42,32 +43,31 @@ export const categories = [
 
 const CategorySection = () => {
   return (
-    <section className="py-12 md:py-16 bg-gray-50">
+    <section className="py-16 md:py-24 bg-gray-50">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-8 md:mb-12">
-          <h2 className="text-2xl md:text-3xl font-bold mb-3 md:mb-4">Explore Categories</h2>
+        <div className="text-center mb-10 md:mb-14">
+          <h2 className="text-2xl md:text-3xl font-bold mb-4">Explore Categories</h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
             Discover the best local businesses and services across different categories
           </p>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-5">
           {categories.map((category) => (
             <Link to={category.link} key={category.id}>
-              <Card className="card-hover border-0 text-center h-full">
-                <CardContent className="p-4 flex flex-col items-center justify-center h-full">
-                  <div className={`category-icon ${category.color} mb-3`}>
+              <Card className="card-hover border-0 text-center h-full shadow-sm hover:shadow-md transition-all duration-300">
+                <CardContent className="p-6 flex flex-col items-center justify-center h-full">
+                  <div className={`category-icon ${category.color} mb-4 shadow-sm`}>
                     <category.icon size={24} />
                   </div>
-                  <h3 className="font-medium">{category.name}</h3>
-                  {/* Removed the listing count display */}
+                  <h3 className="font-medium text-base md:text-lg">{category.name}</h3>
                 </CardContent>
               </Card>
             </Link>
           ))}
         </div>
 
-        <div className="text-center mt-8">
+        <div className="text-center mt-10 md:mt-12">
           <Link 
             to="/categories"
             className="inline-flex items-center text-primary font-medium hover:underline"

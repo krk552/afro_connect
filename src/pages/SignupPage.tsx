@@ -40,13 +40,13 @@ const SignupPage = () => {
   };
 
   return (
-    <Card className="p-6 w-full rounded-xl shadow-lg">
-      <div className="text-center mb-6">
+    <Card className="p-8 w-full rounded-xl shadow-lg">
+      <div className="text-center mb-8">
         <h1 className="text-2xl font-bold">Create an Account</h1>
         <p className="text-muted-foreground mt-2">Join AfroBiz Connect today</p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-5">
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="firstName">First Name</Label>
@@ -56,6 +56,7 @@ const SignupPage = () => {
               value={formData.firstName}
               onChange={handleChange}
               required
+              className="h-11"
             />
           </div>
           <div className="space-y-2">
@@ -66,6 +67,7 @@ const SignupPage = () => {
               value={formData.lastName}
               onChange={handleChange}
               required
+              className="h-11"
             />
           </div>
         </div>
@@ -79,6 +81,7 @@ const SignupPage = () => {
             value={formData.email}
             onChange={handleChange}
             required
+            className="h-11"
           />
         </div>
         
@@ -91,14 +94,15 @@ const SignupPage = () => {
             value={formData.password}
             onChange={handleChange}
             required
+            className="h-11"
           />
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-muted-foreground mt-1">
             Must be at least 8 characters long
           </p>
         </div>
 
-        <div className="flex items-start space-x-2">
-          <Checkbox id="terms" />
+        <div className="flex items-start space-x-3 pt-2">
+          <Checkbox id="terms" className="mt-1" />
           <Label htmlFor="terms" className="text-sm leading-normal">
             I agree to the{" "}
             <Link to="/terms" className="text-primary hover:underline">
@@ -111,12 +115,12 @@ const SignupPage = () => {
           </Label>
         </div>
 
-        <Button type="submit" className="w-full" disabled={isLoading}>
+        <Button type="submit" className="w-full h-11" disabled={isLoading}>
           {isLoading ? "Creating Account..." : "Create Account"}
         </Button>
       </form>
 
-      <div className="mt-6">
+      <div className="mt-8">
         <div className="relative">
           <div className="absolute inset-0 flex items-center">
             <Separator className="w-full" />
@@ -126,17 +130,17 @@ const SignupPage = () => {
           </div>
         </div>
 
-        <div className="mt-6 space-y-3">
-          <Button variant="outline" className="w-full">
+        <div className="mt-8 space-y-4">
+          <Button variant="outline" className="w-full h-11">
             Sign up with Google
           </Button>
-          <Button variant="outline" className="w-full">
+          <Button variant="outline" className="w-full h-11">
             Sign up with Facebook
           </Button>
         </div>
       </div>
 
-      <div className="text-center mt-6">
+      <div className="text-center mt-8">
         <p className="text-sm text-muted-foreground">
           Already have an account?{" "}
           <Link to="/login" className="text-primary hover:underline font-medium">

@@ -6,11 +6,11 @@ import { Button } from "@/components/ui/button";
 
 const FeaturedBusinesses = () => {
   return (
-    <section className="py-16">
+    <section className="py-20 md:py-24 bg-white">
       <div className="container mx-auto px-4">
-        <div className="flex justify-between items-center mb-10">
+        <div className="flex justify-between items-center mb-12">
           <div>
-            <h2 className="text-3xl font-bold">Featured Businesses</h2>
+            <h2 className="text-2xl md:text-3xl font-bold">Featured Businesses</h2>
             <p className="text-muted-foreground mt-2">
               Discover top-rated local businesses in Namibia
             </p>
@@ -20,21 +20,23 @@ const FeaturedBusinesses = () => {
           </Link>
         </div>
 
-        <div className="text-center py-12">
-          <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto">
-            <Building2 className="h-8 w-8 text-muted-foreground" />
+        <Card className="bg-gray-50 border-0 shadow-sm">
+          <div className="text-center py-16 md:py-20">
+            <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto shadow-sm">
+              <Building2 className="h-8 w-8 text-muted-foreground" />
+            </div>
+            <h3 className="mt-6 text-xl font-medium">No featured businesses yet</h3>
+            <p className="mt-3 text-muted-foreground max-w-md mx-auto">
+              When businesses join AfroBiz Connect, the most popular ones will be featured here.
+              Be the first to register your business!
+            </p>
+            <Button className="mt-8 shadow-sm" asChild>
+              <Link to="/business/register">Register Your Business</Link>
+            </Button>
           </div>
-          <h3 className="mt-4 text-xl font-medium">No featured businesses yet</h3>
-          <p className="mt-2 text-muted-foreground max-w-md mx-auto">
-            When businesses join AfroBiz Connect, the most popular ones will be featured here.
-            Be the first to register your business!
-          </p>
-          <Button className="mt-6" asChild>
-            <Link to="/business/register">Register Your Business</Link>
-          </Button>
-        </div>
+        </Card>
         
-        <div className="text-center mt-8 md:hidden">
+        <div className="text-center mt-10 md:hidden">
           <Link 
             to="/businesses"
             className="inline-flex items-center text-primary font-medium hover:underline"

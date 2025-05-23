@@ -31,13 +31,13 @@ const LoginPage = () => {
   };
 
   return (
-    <Card className="p-6 w-full rounded-xl shadow-lg">
-      <div className="text-center mb-6">
+    <Card className="p-8 w-full rounded-xl shadow-lg">
+      <div className="text-center mb-8">
         <h1 className="text-2xl font-bold">Welcome Back</h1>
         <p className="text-muted-foreground mt-2">Sign in to access your account</p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-5">
         <div className="space-y-2">
           <Label htmlFor="email">Email</Label>
           <Input
@@ -47,6 +47,7 @@ const LoginPage = () => {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
+            className="h-11"
           />
         </div>
         
@@ -64,15 +65,16 @@ const LoginPage = () => {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
+            className="h-11"
           />
         </div>
 
-        <Button type="submit" className="w-full" disabled={isLoading}>
+        <Button type="submit" className="w-full h-11" disabled={isLoading}>
           {isLoading ? "Signing in..." : "Sign In"}
         </Button>
       </form>
 
-      <div className="mt-6">
+      <div className="mt-8">
         <div className="relative">
           <div className="absolute inset-0 flex items-center">
             <Separator className="w-full" />
@@ -82,17 +84,17 @@ const LoginPage = () => {
           </div>
         </div>
 
-        <div className="mt-6 space-y-3">
-          <Button variant="outline" className="w-full">
+        <div className="mt-8 space-y-4">
+          <Button variant="outline" className="w-full h-11">
             Continue with Google
           </Button>
-          <Button variant="outline" className="w-full">
+          <Button variant="outline" className="w-full h-11">
             Continue with Facebook
           </Button>
         </div>
       </div>
 
-      <div className="text-center mt-6">
+      <div className="text-center mt-8">
         <p className="text-sm text-muted-foreground">
           Don't have an account?{" "}
           <Link to="/signup" className="text-primary hover:underline font-medium">
