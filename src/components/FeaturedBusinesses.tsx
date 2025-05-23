@@ -6,9 +6,9 @@ import { Button } from "@/components/ui/button";
 
 const FeaturedBusinesses = () => {
   return (
-    <section className="py-20 md:py-24 bg-white">
+    <section className="py-16 md:py-20 bg-white">
       <div className="container mx-auto px-4">
-        <div className="flex justify-between items-center mb-12">
+        <div className="flex justify-between items-center mb-8 md:mb-12">
           <div>
             <h2 className="text-2xl md:text-3xl font-bold">Featured Businesses</h2>
             <p className="text-muted-foreground mt-2">
@@ -21,7 +21,7 @@ const FeaturedBusinesses = () => {
         </div>
 
         <Card className="bg-gray-50 border-0 shadow-sm">
-          <div className="text-center py-16 md:py-20">
+          <div className="text-center py-12 md:py-20 px-4">
             <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto shadow-sm">
               <Building2 className="h-8 w-8 text-muted-foreground" />
             </div>
@@ -36,7 +36,7 @@ const FeaturedBusinesses = () => {
           </div>
         </Card>
         
-        <div className="text-center mt-10 md:hidden">
+        <div className="text-center mt-8 md:hidden">
           <Link 
             to="/businesses"
             className="inline-flex items-center text-primary font-medium hover:underline"

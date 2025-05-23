@@ -8,9 +8,10 @@ const MainLayout = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
-      <main className="flex-grow">
+      <main className="flex-grow pt-16">
         <Outlet />
       </main>
+      <div className="md:hidden h-16"></div> {/* Spacer for bottom nav on mobile */}
       <BottomNav />
       <Footer />
     </div>

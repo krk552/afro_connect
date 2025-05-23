@@ -78,7 +78,7 @@ export const Navbar = () => {
       {/* Mobile menu */}
       {isMenuOpen && (
         <div className="md:hidden fixed inset-0 top-16 bg-white z-40 animate-fade-in">
-          <div className="flex flex-col p-6 space-y-5">
+          <div className="flex flex-col p-6 space-y-5 overflow-y-auto h-[calc(100vh-4rem)]">
             <Link to="/categories" className="py-3 px-4 hover:bg-muted rounded-md text-lg">
               Categories
             </Link>

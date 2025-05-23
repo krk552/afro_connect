@@ -9,7 +9,7 @@ import BusinessPromotion from "@/components/BusinessPromotion";
 const Index = () => {
   return (
     <div className="min-h-screen flex flex-col">
-      <main className="flex-grow">
+      <main className="flex-grow pt-16"> {/* Add top padding to prevent content overlap with navbar */}
         <Hero />
         <CategorySection />
         <FeaturedBusinesses />
