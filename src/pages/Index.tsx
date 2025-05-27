@@ -1,4 +1,3 @@
-
 import Hero from "@/components/Hero";
 import CategorySection from "@/components/CategorySection";
 import FeaturedBusinesses from "@/components/FeaturedBusinesses";
@@ -8,7 +7,7 @@ import BusinessPromotion from "@/components/BusinessPromotion";
 
 const Index = () => {
   return (
-    <div>
+    <div className="min-h-screen">
       <Hero />
       <CategorySection />
       <FeaturedBusinesses />

@@ -1,34 +1,65 @@
-
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { 
   User, Mail, Phone, MapPin, Edit, LogOut, 
-  Calendar, Heart, Settings, Bell, Shield
+  Calendar, Heart, Settings, Bell, Shield,
+  Camera, Star, Clock, Award, TrendingUp,
+  CreditCard, Gift, HelpCircle
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 import { 
   Tabs, TabsContent, TabsList, TabsTrigger 
 } from "@/components/ui/tabs";
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { Separator } from "@/components/ui/separator";
 import { toast } from "@/hooks/use-toast";
 
 const UserProfile = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [profileData, setProfileData] = useState({
-    name: "Demo User",
-    email: "demo@example.com",
-    phone: "+000 00 000 0000",
-    location: "Your Location",
+    firstName: "Amara",
+    lastName: "Nakamura",
+    email: "amara.nakamura@example.com",
+    phone: "+264 81 123 4567",
+    location: "Windhoek, Namibia",
+    bio: "Love discovering new businesses and experiences in Namibia!",
+    joinDate: "May 2023"
   });
+
+  const [preferences, setPreferences] = useState({
+    emailNotifications: true,
+    smsNotifications: false,
+    marketingEmails: true,
+    bookingReminders: true,
+    language: "en",
+    currency: "NAD"
+  });
+
+  // Mock user stats
+  const userStats = {
+    totalBookings: 12,
+    favoriteBusinesses: 8,
+    reviewsWritten: 5,
+    membershipLevel: "Gold"
+  };
 
   const handleSaveProfile = () => {
     setIsEditing(false);
     toast({
-      title: "Profile updated",
-      description: "Your profile has been updated successfully",
+      title: "Profile updated successfully! ✨",
+      description: "Your profile information has been saved.",
     });
   };
 
@@ -37,70 +68,163 @@ const UserProfile = () => {
     setProfileData(prev => ({ ...prev, [name]: value }));
   };
 
+  const handlePreferenceChange = (key: string, value: boolean | string) => {
+    setPreferences(prev => ({ ...prev, [key]: value }));
+  };
+
+  const StatCard = ({ icon: Icon, title, value, color }: { 
+    icon: any, title: string, value: string | number, color: string 
+  }) => (
+    <Card className="hover:shadow-md transition-shadow">
+      <CardContent className="p-4">
+        <div className="flex items-center gap-3">
+          <div className={`p-2 rounded-lg ${color}`}>
+            <Icon className="h-5 w-5 text-white" />
+          </div>
+          <div>
+            <p className="text-sm text-muted-foreground">{title}</p>
+            <p className="text-xl font-bold">{value}</p>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+
   return (
-    <div className="pt-16 pb-24">
+    <div className="pt-16 pb-24 bg-gradient-to-br from-purple-50 to-pink-50 min-h-screen">
       <div className="container mx-auto px-4">
-        <div className="max-w-4xl mx-auto">
-          <Card className="mb-6">
-            <CardContent className="p-6">
+        <div className="max-w-6xl mx-auto">
+          {/* Header Section */}
+          <Card className="mb-8 border-0 shadow-xl bg-white/95 backdrop-blur-sm">
+            <CardContent className="p-8">
               {!isEditing ? (
-                <div className="flex flex-col md:flex-row md:items-center">
-                  <Avatar className="h-20 w-20">
-                    <AvatarImage src="https://images.unsplash.com/photo-1580489944761-15a19d654956" />
-                    <AvatarFallback>MN</AvatarFallback>
-                  </Avatar>
-                  
-                  <div className="mt-4 md:mt-0 md:ml-6 flex-1">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <h1 className="text-2xl font-bold">{profileData.name}</h1>
-                        <p className="text-muted-foreground">Member since May 2023</p>
-                      </div>
-                      <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}>
-                        <Edit className="h-4 w-4 mr-1" /> Edit Profile
-                      </Button>
+                <div>
+                  <div className="flex flex-col lg:flex-row lg:items-start gap-6">
+                    <div className="relative">
+                      <Avatar className="h-24 w-24 border-4 border-white shadow-lg">
+                        <AvatarImage src="https://images.unsplash.com/photo-1580489944761-15a19d654956" />
+                        <AvatarFallback className="text-xl bg-gradient-to-br from-purple-500 to-pink-500 text-white">
+                          {profileData.firstName.charAt(0)}{profileData.lastName.charAt(0)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <Badge className="absolute -bottom-2 -right-2 bg-gradient-to-r from-yellow-400 to-orange-400 text-white border-0">
+                        {userStats.membershipLevel}
+                      </Badge>
                     </div>
                     
-                    <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                      <div className="flex items-center">
-                        <Mail className="h-4 w-4 text-muted-foreground mr-2" />
-                        <span>{profileData.email}</span>
+                    <div className="flex-1">
+                      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                        <div>
+                          <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                            {profileData.firstName} {profileData.lastName}
+                          </h1>
+                          <p className="text-muted-foreground mt-1">Member since {profileData.joinDate}</p>
+                          {profileData.bio && (
+                            <p className="text-sm text-muted-foreground mt-2 max-w-md">{profileData.bio}</p>
+                          )}
+                        </div>
+                        <Button 
+                          variant="outline" 
+                          onClick={() => setIsEditing(true)}
+                          className="border-2 hover:border-purple-300"
+                        >
+                          <Edit className="h-4 w-4 mr-2" /> 
+                          Edit Profile
+                        </Button>
                       </div>
-                      <div className="flex items-center">
-                        <Phone className="h-4 w-4 text-muted-foreground mr-2" />
-                        <span>{profileData.phone}</span>
-                      </div>
-                      <div className="flex items-center">
-                        <MapPin className="h-4 w-4 text-muted-foreground mr-2" />
-                        <span>{profileData.location}</span>
+                      
+                      <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
+                        <div className="flex items-center gap-2">
+                          <Mail className="h-4 w-4 text-purple-500" />
+                          <span>{profileData.email}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Phone className="h-4 w-4 text-purple-500" />
+                          <span>{profileData.phone}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <MapPin className="h-4 w-4 text-purple-500" />
+                          <span>{profileData.location}</span>
+                        </div>
                       </div>
                     </div>
+                  </div>
+
+                  {/* Stats Section */}
+                  <div className="mt-8 grid grid-cols-2 lg:grid-cols-4 gap-4">
+                    <StatCard 
+                      icon={Calendar} 
+                      title="Total Bookings" 
+                      value={userStats.totalBookings} 
+                      color="bg-gradient-to-r from-blue-500 to-blue-600"
+                    />
+                    <StatCard 
+                      icon={Heart} 
+                      title="Favorites" 
+                      value={userStats.favoriteBusinesses} 
+                      color="bg-gradient-to-r from-red-500 to-pink-500"
+                    />
+                    <StatCard 
+                      icon={Star} 
+                      title="Reviews Written" 
+                      value={userStats.reviewsWritten} 
+                      color="bg-gradient-to-r from-yellow-500 to-orange-500"
+                    />
+                    <StatCard 
+                      icon={Award} 
+                      title="Points Earned" 
+                      value="1,250" 
+                      color="bg-gradient-to-r from-purple-500 to-indigo-500"
+                    />
                   </div>
                 </div>
               ) : (
                 <div>
-                  <div className="flex items-center mb-6">
-                    <Avatar className="h-20 w-20">
-                      <AvatarImage src="https://images.unsplash.com/photo-1580489944761-15a19d654956" />
-                      <AvatarFallback>MN</AvatarFallback>
-                    </Avatar>
-                    <Button variant="outline" size="sm" className="ml-4">
-                      Change Photo
-                    </Button>
+                  <div className="flex items-center gap-6 mb-8">
+                    <div className="relative">
+                      <Avatar className="h-24 w-24 border-4 border-white shadow-lg">
+                        <AvatarImage src="https://images.unsplash.com/photo-1580489944761-15a19d654956" />
+                        <AvatarFallback className="text-xl bg-gradient-to-br from-purple-500 to-pink-500 text-white">
+                          {profileData.firstName.charAt(0)}{profileData.lastName.charAt(0)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="absolute -bottom-2 -right-2 h-8 w-8 p-0 rounded-full border-2 bg-white"
+                      >
+                        <Camera className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    <div>
+                      <h2 className="text-2xl font-bold">Edit Profile</h2>
+                      <p className="text-muted-foreground">Update your personal information</p>
+                    </div>
                   </div>
                   
-                  <div className="space-y-4">
+                  <div className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="name">Full Name</Label>
+                      <div className="space-y-2">
+                        <Label htmlFor="firstName">First Name</Label>
                         <Input
-                          id="name"
-                          name="name"
-                          value={profileData.name}
+                          id="firstName"
+                          name="firstName"
+                          value={profileData.firstName}
                           onChange={handleChange}
+                          className="border-2 focus:border-purple-300"
                         />
                       </div>
-                      <div>
+                      <div className="space-y-2">
+                        <Label htmlFor="lastName">Last Name</Label>
+                        <Input
+                          id="lastName"
+                          name="lastName"
+                          value={profileData.lastName}
+                          onChange={handleChange}
+                          className="border-2 focus:border-purple-300"
+                        />
+                      </div>
+                      <div className="space-y-2">
                         <Label htmlFor="email">Email</Label>
                         <Input
                           id="email"
@@ -108,33 +232,50 @@ const UserProfile = () => {
                           type="email"
                           value={profileData.email}
                           onChange={handleChange}
+                          className="border-2 focus:border-purple-300"
                         />
                       </div>
-                      <div>
+                      <div className="space-y-2">
                         <Label htmlFor="phone">Phone</Label>
                         <Input
                           id="phone"
                           name="phone"
                           value={profileData.phone}
                           onChange={handleChange}
+                          className="border-2 focus:border-purple-300"
                         />
                       </div>
-                      <div>
+                      <div className="space-y-2 md:col-span-2">
                         <Label htmlFor="location">Location</Label>
                         <Input
                           id="location"
                           name="location"
                           value={profileData.location}
                           onChange={handleChange}
+                          className="border-2 focus:border-purple-300"
+                        />
+                      </div>
+                      <div className="space-y-2 md:col-span-2">
+                        <Label htmlFor="bio">Bio</Label>
+                        <Input
+                          id="bio"
+                          name="bio"
+                          value={profileData.bio}
+                          onChange={handleChange}
+                          placeholder="Tell us a bit about yourself..."
+                          className="border-2 focus:border-purple-300"
                         />
                       </div>
                     </div>
 
-                    <div className="flex justify-end space-x-2 pt-4">
+                    <div className="flex justify-end space-x-3 pt-4">
                       <Button variant="outline" onClick={() => setIsEditing(false)}>
                         Cancel
                       </Button>
-                      <Button onClick={handleSaveProfile}>
+                      <Button 
+                        onClick={handleSaveProfile}
+                        className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+                      >
                         Save Changes
                       </Button>
                     </div>
@@ -144,124 +285,261 @@ const UserProfile = () => {
             </CardContent>
           </Card>
         
-          <Tabs defaultValue="bookings">
-            <TabsList className="grid grid-cols-3">
-              <TabsTrigger value="bookings">My Bookings</TabsTrigger>
-              <TabsTrigger value="favorites">My Favorites</TabsTrigger>
-              <TabsTrigger value="settings">Settings</TabsTrigger>
+          <Tabs defaultValue="activity" className="space-y-6">
+            <TabsList className="grid grid-cols-4 h-12">
+              <TabsTrigger value="activity" className="flex items-center gap-2">
+                <TrendingUp className="h-4 w-4" />
+                Activity
+              </TabsTrigger>
+              <TabsTrigger value="bookings" className="flex items-center gap-2">
+                <Calendar className="h-4 w-4" />
+                Bookings
+              </TabsTrigger>
+              <TabsTrigger value="favorites" className="flex items-center gap-2">
+                <Heart className="h-4 w-4" />
+                Favorites
+              </TabsTrigger>
+              <TabsTrigger value="settings" className="flex items-center gap-2">
+                <Settings className="h-4 w-4" />
+                Settings
+              </TabsTrigger>
             </TabsList>
             
-            <TabsContent value="bookings" className="mt-6">
-              <div className="space-y-4">
-                <Link to="/bookings">
-                  <Card className="card-hover">
-                    <CardContent className="p-4 flex justify-between items-center">
-                      <div className="flex items-center">
-                        <Calendar className="h-10 w-10 p-2 bg-primary/10 text-primary rounded-md mr-4" />
-                        <div>
-                          <h3 className="font-medium">Upcoming Appointments</h3>
-                          <p className="text-sm text-muted-foreground">View your scheduled appointments</p>
-                        </div>
-                      </div>
-                      <div>0</div>
-                    </CardContent>
-                  </Card>
-                </Link>
-                
-                <Card className="card-hover">
-                  <CardContent className="p-4 flex justify-between items-center">
-                    <div className="flex items-center">
-                      <Calendar className="h-10 w-10 p-2 bg-muted rounded-md mr-4" />
-                      <div>
-                        <h3 className="font-medium">Past Appointments</h3>
-                        <p className="text-sm text-muted-foreground">View your booking history</p>
-                      </div>
-                    </div>
-                    <div>0</div>
-                  </CardContent>
-                </Card>
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="favorites" className="mt-6">
+            <TabsContent value="activity" className="space-y-4">
               <Card>
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-medium">Favorite Businesses</h3>
-                    <Link to="/favorites" className="text-primary text-sm">
-                      View All
-                    </Link>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <TrendingUp className="h-5 w-5" />
+                    Recent Activity
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center gap-4 p-3 bg-green-50 rounded-lg">
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium">Booked appointment at Desert Rose Spa</p>
+                      <p className="text-xs text-muted-foreground">2 hours ago</p>
+                    </div>
                   </div>
-                  
-                  <div className="text-center py-10">
-                    <Heart className="h-12 w-12 mx-auto text-muted-foreground opacity-50" />
-                    <p className="mt-4 text-muted-foreground">You don't have any favorites yet</p>
-                    <Button variant="outline" className="mt-4" asChild>
-                      <Link to="/categories">Explore Businesses</Link>
-                    </Button>
+                  <div className="flex items-center gap-4 p-3 bg-blue-50 rounded-lg">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium">Left a 5-star review for Kalahari Auto Care</p>
+                      <p className="text-xs text-muted-foreground">1 day ago</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4 p-3 bg-purple-50 rounded-lg">
+                    <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium">Added Namibia Hair Studio to favorites</p>
+                      <p className="text-xs text-muted-foreground">3 days ago</p>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
             </TabsContent>
             
-            <TabsContent value="settings" className="mt-6">
-              <div className="space-y-6">
-                <Card>
-                  <CardContent className="p-6">
-                    <h3 className="font-medium mb-4">Notification Settings</h3>
-                    
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center">
-                          <Bell className="h-5 w-5 mr-2 text-muted-foreground" />
-                          <div>
-                            <p className="font-medium">Booking Reminders</p>
-                            <p className="text-sm text-muted-foreground">Receive reminders about upcoming appointments</p>
-                          </div>
+            <TabsContent value="bookings" className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Link to="/bookings">
+                  <Card className="hover:shadow-lg transition-all duration-300 border-2 hover:border-blue-200">
+                    <CardContent className="p-6">
+                      <div className="flex items-center gap-4">
+                        <div className="p-3 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg">
+                          <Calendar className="h-6 w-6 text-white" />
                         </div>
-                        <div>
-                          <Button variant="outline" size="sm">Enabled</Button>
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-lg">Upcoming Appointments</h3>
+                          <p className="text-sm text-muted-foreground">View and manage your scheduled appointments</p>
+                          <p className="text-2xl font-bold text-blue-600 mt-2">2</p>
                         </div>
                       </div>
-                      
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center">
-                          <Bell className="h-5 w-5 mr-2 text-muted-foreground" />
-                          <div>
-                            <p className="font-medium">Promotion Alerts</p>
-                            <p className="text-sm text-muted-foreground">Receive notifications about deals and promotions</p>
-                          </div>
-                        </div>
-                        <div>
-                          <Button variant="outline" size="sm">Disabled</Button>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                    </CardContent>
+                  </Card>
+                </Link>
                 
-                <Card>
-                  <CardContent className="p-6">
-                    <h3 className="font-medium mb-4">Account Settings</h3>
-                    
-                    <div className="space-y-4">
-                      <Button variant="outline" className="w-full justify-start" asChild>
-                        <Link to="/change-password">
-                          <Shield className="h-5 w-5 mr-2" />
-                          Change Password
-                        </Link>
-                      </Button>
-                      
-                      <Button variant="outline" className="w-full justify-start text-destructive hover:text-destructive" asChild>
-                        <Link to="/logout">
-                          <LogOut className="h-5 w-5 mr-2" />
-                          Log Out
-                        </Link>
+                <Link to="/bookings">
+                  <Card className="hover:shadow-lg transition-all duration-300 border-2 hover:border-gray-200">
+                    <CardContent className="p-6">
+                      <div className="flex items-center gap-4">
+                        <div className="p-3 bg-gradient-to-r from-gray-500 to-gray-600 rounded-lg">
+                          <Clock className="h-6 w-6 text-white" />
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-lg">Booking History</h3>
+                          <p className="text-sm text-muted-foreground">View your past appointments and experiences</p>
+                          <p className="text-2xl font-bold text-gray-600 mt-2">{userStats.totalBookings}</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="favorites" className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="flex items-center gap-2">
+                      <Heart className="h-5 w-5" />
+                      Favorite Businesses
+                    </CardTitle>
+                    <Link to="/favorites">
+                      <Button variant="outline" size="sm">View All</Button>
+                    </Link>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  {userStats.favoriteBusinesses > 0 ? (
+                    <div className="text-center py-8">
+                      <div className="w-16 h-16 bg-gradient-to-r from-red-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <Heart className="h-8 w-8 text-white" />
+                      </div>
+                      <h3 className="text-lg font-semibold mb-2">You have {userStats.favoriteBusinesses} favorites!</h3>
+                      <p className="text-muted-foreground mb-4">Your favorite businesses are just a click away</p>
+                      <Button asChild>
+                        <Link to="/favorites">View Favorites</Link>
                       </Button>
                     </div>
-                  </CardContent>
-                </Card>
-              </div>
+                  ) : (
+                    <div className="text-center py-10">
+                      <Heart className="h-12 w-12 mx-auto text-muted-foreground opacity-50 mb-4" />
+                      <p className="text-muted-foreground mb-4">You don't have any favorites yet</p>
+                      <Button variant="outline" asChild>
+                        <Link to="/businesses">Explore Businesses</Link>
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+            
+            <TabsContent value="settings" className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Bell className="h-5 w-5" />
+                    Notification Preferences
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium">Email Notifications</p>
+                      <p className="text-sm text-muted-foreground">Receive booking confirmations and updates</p>
+                    </div>
+                    <Switch 
+                      checked={preferences.emailNotifications}
+                      onCheckedChange={(checked) => handlePreferenceChange('emailNotifications', checked)}
+                    />
+                  </div>
+                  <Separator />
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium">SMS Notifications</p>
+                      <p className="text-sm text-muted-foreground">Get text reminders for appointments</p>
+                    </div>
+                    <Switch 
+                      checked={preferences.smsNotifications}
+                      onCheckedChange={(checked) => handlePreferenceChange('smsNotifications', checked)}
+                    />
+                  </div>
+                  <Separator />
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium">Marketing Emails</p>
+                      <p className="text-sm text-muted-foreground">Receive promotions and special offers</p>
+                    </div>
+                    <Switch 
+                      checked={preferences.marketingEmails}
+                      onCheckedChange={(checked) => handlePreferenceChange('marketingEmails', checked)}
+                    />
+                  </div>
+                  <Separator />
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium">Booking Reminders</p>
+                      <p className="text-sm text-muted-foreground">Get reminded about upcoming appointments</p>
+                    </div>
+                    <Switch 
+                      checked={preferences.bookingReminders}
+                      onCheckedChange={(checked) => handlePreferenceChange('bookingReminders', checked)}
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Settings className="h-5 w-5" />
+                    App Preferences
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Language</Label>
+                      <Select value={preferences.language} onValueChange={(value) => handlePreferenceChange('language', value)}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="en">English</SelectItem>
+                          <SelectItem value="af">Afrikaans</SelectItem>
+                          <SelectItem value="de">German</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Currency</Label>
+                      <Select value={preferences.currency} onValueChange={(value) => handlePreferenceChange('currency', value)}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="NAD">Namibian Dollar (N$)</SelectItem>
+                          <SelectItem value="USD">US Dollar ($)</SelectItem>
+                          <SelectItem value="EUR">Euro (€)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Shield className="h-5 w-5" />
+                    Account & Security
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <Button variant="outline" className="w-full justify-start">
+                    <Shield className="h-4 w-4 mr-2" />
+                    Change Password
+                  </Button>
+                  <Button variant="outline" className="w-full justify-start">
+                    <CreditCard className="h-4 w-4 mr-2" />
+                    Payment Methods
+                  </Button>
+                  <Button variant="outline" className="w-full justify-start">
+                    <Gift className="h-4 w-4 mr-2" />
+                    Referral Program
+                  </Button>
+                  <Button variant="outline" className="w-full justify-start">
+                    <HelpCircle className="h-4 w-4 mr-2" />
+                    Help & Support
+                  </Button>
+                  <Separator />
+                  <Button variant="outline" className="w-full justify-start text-red-600 hover:text-red-700">
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Sign Out
+                  </Button>
+                </CardContent>
+              </Card>
             </TabsContent>
           </Tabs>
         </div>
