@@ -8,7 +8,7 @@ type BookingInsert = Database['public']['Tables']['bookings']['Insert'];
 type BookingUpdate = Database['public']['Tables']['bookings']['Update'];
 type BookingStatus = Database['public']['Enums']['booking_status'];
 
-type BookingWithDetails = Booking & {
+export type BookingWithDetails = Booking & {
   businesses: Database['public']['Tables']['businesses']['Row'] | null;
   services: Database['public']['Tables']['services']['Row'] | null;
   users: Database['public']['Tables']['users']['Row'] | null;

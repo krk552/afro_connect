@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Menu, X, User, MapPin, Search } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import NotificationSystem from "./NotificationSystem";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
@@ -17,6 +17,7 @@ export const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
   const { user, profile, signOut, loading } = useAuth();
 
   useEffect(() => {
@@ -51,33 +52,38 @@ export const Navbar = () => {
 
   const handleSignOut = async () => {
     await signOut();
+    navigate('/');
   };
 
-  // Get user display info
+  // Get user display info - simplified and more robust
   const getUserDisplayInfo = () => {
-    if (profile) {
+    if (loading) return null; // Don't attempt to display if auth state is loading
+
+    if (profile) { // Prioritize fully loaded profile from your 'users' table
       return {
-        name: `${profile.first_name} ${profile.last_name}`,
-        email: profile.email,
-        avatar: profile.profile_image_url,
+        name: `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || (user?.email?.split('@')[0] || 'User'),
+        email: profile.email || user?.email || 'No email',
+        avatarUrl: profile.profile_image_url || user?.user_metadata?.avatar_url, // Prefer profile_image_url
+        initials: `${(profile.first_name || 'U')[0]}${(profile.last_name || ' ')[0]}`.trim().toUpperCase(), // Ensure initials are uppercase and handle single names
         isBusinessOwner: profile.role === 'business_owner'
       };
-    }
-    if (user) {
+    } 
+    // Fallback if profile is not yet loaded but Supabase user exists (e.g., immediately after signup, before profile creation)
+    // Or if fetchProfile failed for some reason but auth.user is present
+    if (user) { 
       return {
-        name: user.user_metadata?.first_name ? 
-          `${user.user_metadata.first_name} ${user.user_metadata.last_name}` : 
-          user.email?.split('@')[0] || 'User',
-        email: user.email || '',
-        avatar: user.user_metadata?.avatar_url,
-        isBusinessOwner: user.user_metadata?.role === 'business_owner'
+        name: `${user.user_metadata?.first_name || ''} ${user.user_metadata?.last_name || ''}`.trim() || user.email?.split('@')[0] || 'User',
+        email: user.email || 'No email',
+        avatarUrl: user.user_metadata?.avatar_url,
+        initials: (user.email || 'U')[0].toUpperCase(),
+        isBusinessOwner: user.user_metadata?.role === 'business_owner' // or profile?.role check if profile available
       };
     }
     return null;
   };
 
   const userInfo = getUserDisplayInfo();
-  const isAuthenticated = !!user && !loading;
+  const isAuthenticated = !loading && !!user;
 
   return (
     <header 
@@ -133,8 +139,8 @@ export const Navbar = () => {
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                     <Avatar className="h-8 w-8">
-                      <AvatarImage src={userInfo.avatar} alt={userInfo.name} />
-                      <AvatarFallback>{userInfo.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                      <AvatarImage src={userInfo.avatarUrl || undefined} alt={userInfo.name} />
+                      <AvatarFallback>{userInfo.initials}</AvatarFallback>
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
@@ -210,8 +216,8 @@ export const Navbar = () => {
             {isAuthenticated && userInfo && (
               <div className="flex items-center space-x-3 p-4 bg-gray-50 rounded-lg">
                 <Avatar className="h-12 w-12">
-                  <AvatarImage src={userInfo.avatar} alt={userInfo.name} />
-                  <AvatarFallback>{userInfo.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                  <AvatarImage src={userInfo.avatarUrl || undefined} alt={userInfo.name} />
+                  <AvatarFallback>{userInfo.initials}</AvatarFallback>
                 </Avatar>
                 <div>
                   <p className="font-medium">{userInfo.name}</p>

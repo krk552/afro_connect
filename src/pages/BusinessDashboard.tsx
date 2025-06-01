@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { 
   BarChart3, 
@@ -55,10 +55,11 @@ import {
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
-import { useBookings } from "@/hooks/useBookings";
-import { useBusinesses } from "@/hooks/useBusinesses";
+import { useBookings, BookingWithDetails } from "@/hooks/useBookings";
+import { useBusinesses, BusinessWithCategory } from "@/hooks/useBusinesses";
+import useServices, { Service as ServiceType, ServiceInsert } from "@/hooks/useServices";
 
 interface BusinessStats {
   totalBookings: number;
@@ -69,89 +70,47 @@ interface BusinessStats {
   responseRate: number;
 }
 
-interface Booking {
-  id: string;
-  customerName: string;
-  service: string;
-  date: string;
-  time: string;
-  status: "confirmed" | "pending" | "completed" | "cancelled";
-  amount: number;
-  customerPhone: string;
-  customerEmail: string;
-}
-
-interface Service {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  duration: string;
-  category: string;
-  isActive: boolean;
-}
-
 const BusinessDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
-  const { user, profile } = useAuth();
-  const { bookings, loading: bookingsLoading } = useBookings();
+  const { user } = useAuth();
+  const { bookings: allBookings, loading: bookingsLoading, updateBookingStatus } = useBookings();
   const { businesses, loading: businessesLoading } = useBusinesses();
+  const {
+    services,
+    loading: servicesLoading,
+    error: servicesError,
+    fetchServicesByBusiness,
+    addService,
+    updateService,
+    deleteService
+  } = useServices();
 
-  // Find the user's business
   const userBusiness = businesses?.find(b => b.owner_id === user?.id);
 
-  // Filter bookings for this business
-  const businessBookings = bookings?.filter(b => b.business_id === userBusiness?.id) || [];
+  useEffect(() => {
+    if (userBusiness?.id) {
+      fetchServicesByBusiness(userBusiness.id);
+    }
+  }, [userBusiness?.id, fetchServicesByBusiness]);
 
-  // Calculate business stats from real data
+  const businessBookings = allBookings?.filter(b => b.business_id === userBusiness?.id) || [];
+
   const businessStats: BusinessStats = {
     totalBookings: businessBookings.length,
     monthlyRevenue: businessBookings
-      .filter(b => new Date(b.booking_date).getMonth() === new Date().getMonth())
+      .filter(b => b.booking_date && new Date(b.booking_date).getMonth() === new Date().getMonth())
       .reduce((sum, b) => sum + (b.total_amount || 0), 0),
     averageRating: userBusiness?.average_rating || 0,
     totalReviews: userBusiness?.review_count || 0,
     profileViews: userBusiness?.view_count || 0,
-    responseRate: 95 // This would come from business metrics
+    responseRate: 95
   };
 
-  // Get recent bookings (last 5)
-  const recentBookings = businessBookings
-    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+  const recentBookings: BookingWithDetails[] = businessBookings
+    .sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime())
     .slice(0, 5);
 
-  // Mock services data - in real app, this would come from services table
-  const services: Service[] = [
-    {
-      id: "1",
-      name: "Women's Haircut",
-      description: "Professional haircut and styling for women",
-      price: 250,
-      duration: "45 min",
-      category: "Hair Services",
-      isActive: true
-    },
-    {
-      id: "2",
-      name: "Men's Haircut", 
-      description: "Classic and modern haircuts for men",
-      price: 150,
-      duration: "30 min",
-      category: "Hair Services",
-      isActive: true
-    },
-    {
-      id: "3",
-      name: "Hair Coloring",
-      description: "Professional hair coloring and highlights",
-      price: 500,
-      duration: "2 hrs",
-      category: "Hair Services",
-      isActive: true
-    }
-  ];
-
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status: string | null | undefined) => {
     switch (status) {
       case "confirmed": return "bg-blue-100 text-blue-800";
       case "pending": return "bg-yellow-100 text-yellow-800";
@@ -161,14 +120,40 @@ const BusinessDashboard = () => {
     }
   };
 
-  const handleStatusChange = (bookingId: string, newStatus: string) => {
-    toast({
-      title: "Booking Updated",
-      description: `Booking status changed to ${newStatus}`,
-    });
+  const handleBookingStatusChange = async (bookingId: string, newStatus: BookingWithDetails['status']) => {
+    if (!newStatus) {
+      toast.error("Invalid status selected");
+      return;
+    }
+    const result = await updateBookingStatus(bookingId, newStatus);
+    if (result && !result.error) {
+      toast.success(`Booking status changed to ${newStatus}`);
+    } else {
+      toast.error(result?.error?.message || "Failed to update booking status");
+    }
   };
 
-  if (bookingsLoading || businessesLoading) {
+  const handleAddNewService = async () => {
+    if (!userBusiness?.id) {
+      toast.error("Business not found to add service to.");
+      return;
+    }
+    const newServiceData: ServiceInsert = {
+      business_id: userBusiness.id,
+      name: "New Awesome Service",
+      description: "A detailed description of this new service.",
+      price: 100,
+      currency: userBusiness.currency || "NAD",
+      duration_minutes: 60,
+      is_active: true,
+    };
+    const { error } = await addService(newServiceData);
+    if (!error) {
+    } else {
+    }
+  };
+
+  if (bookingsLoading || businessesLoading || (userBusiness?.id && servicesLoading)) {
     return (
       <div className="pt-16 pb-24">
         <div className="container mx-auto px-4">
@@ -252,7 +237,7 @@ const BusinessDashboard = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">Monthly Revenue</p>
-                    <p className="text-2xl font-bold">{userBusiness.currency} {businessStats.monthlyRevenue.toLocaleString()}</p>
+                    <p className="text-2xl font-bold">{userBusiness.currency || 'N$'} {businessStats.monthlyRevenue.toLocaleString()}</p>
                     <p className="text-xs text-green-600 flex items-center mt-1">
                       <TrendingUp className="mr-1 h-3 w-3" />
                       {businessStats.monthlyRevenue > 0 ? '+8% from last month' : 'No revenue yet'}
@@ -334,10 +319,10 @@ const BusinessDashboard = () => {
                                 </Badge>
                               </div>
                               <p className="text-sm text-muted-foreground">
-                                {booking.services?.name || 'Service'} • {new Date(booking.booking_date).toLocaleDateString()}
+                                {booking.services?.name || 'Service'} • {booking.booking_date ? new Date(booking.booking_date).toLocaleDateString() : 'N/A'}
                               </p>
                               <p className="text-sm font-medium text-primary">
-                                {booking.currency} {booking.total_amount}
+                                {booking.currency || userBusiness?.currency || 'N$'} {booking.total_amount}
                               </p>
                             </div>
                           </div>
@@ -421,30 +406,30 @@ const BusinessDashboard = () => {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {recentBookings.map((booking) => (
+                      {businessBookings.map((booking) => (
                         <TableRow key={booking.id}>
                           <TableCell>
                             <div className="flex items-center space-x-3">
                               <Avatar className="h-8 w-8">
-                                <AvatarFallback>{booking.customerName.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                                <AvatarFallback>{(booking.customer_name || 'C').split(' ').map(n => n[0])[0]}</AvatarFallback>
                               </Avatar>
                               <div>
-                                <p className="font-medium">{booking.customerName}</p>
-                                <p className="text-sm text-muted-foreground">{booking.customerPhone}</p>
+                                <p className="font-medium">{booking.customer_name || 'N/A'}</p>
+                                <p className="text-sm text-muted-foreground">{booking.customer_phone || 'N/A'}</p>
                               </div>
                             </div>
                           </TableCell>
-                          <TableCell>{booking.service}</TableCell>
+                          <TableCell>{booking.services?.name || 'N/A'}</TableCell>
                           <TableCell>
                             <div>
-                              <p>{booking.date}</p>
-                              <p className="text-sm text-muted-foreground">{booking.time}</p>
+                              <p>{booking.booking_date ? new Date(booking.booking_date).toLocaleDateString() : 'N/A'}</p>
+                              <p className="text-sm text-muted-foreground">{booking.booking_time || 'N/A'}</p>
                             </div>
                           </TableCell>
-                          <TableCell>N${booking.amount}</TableCell>
+                          <TableCell>{userBusiness?.currency || 'N$'}{booking.total_amount}</TableCell>
                           <TableCell>
                             <Badge className={getStatusColor(booking.status)}>
-                              {booking.status}
+                              {booking.status || 'N/A'}
                             </Badge>
                           </TableCell>
                           <TableCell>
@@ -455,13 +440,13 @@ const BusinessDashboard = () => {
                                 </Button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent>
-                                <DropdownMenuItem onClick={() => handleStatusChange(booking.id, "confirmed")}>
+                                <DropdownMenuItem onClick={() => handleBookingStatusChange(booking.id, "confirmed")}>
                                   Confirm
                                 </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleStatusChange(booking.id, "completed")}>
+                                <DropdownMenuItem onClick={() => handleBookingStatusChange(booking.id, "completed")}>
                                   Mark Complete
                                 </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleStatusChange(booking.id, "cancelled")}>
+                                <DropdownMenuItem onClick={() => handleBookingStatusChange(booking.id, "cancelled")}>
                                   Cancel
                                 </DropdownMenuItem>
                               </DropdownMenuContent>
@@ -480,38 +465,55 @@ const BusinessDashboard = () => {
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between">
                   <CardTitle>Your Services</CardTitle>
-                  <Button>
+                  <Button onClick={handleAddNewService}>
                     <Plus className="mr-2 h-4 w-4" />
                     Add New Service
                   </Button>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {services.map((service) => (
-                      <Card key={service.id} className="relative">
-                        <CardContent className="p-4">
-                          <div className="flex items-start justify-between mb-3">
-                            <div className="flex-1">
-                              <h3 className="font-semibold">{service.name}</h3>
-                              <p className="text-sm text-muted-foreground mt-1">
-                                {service.description}
-                              </p>
+                  {servicesLoading && <p>Loading services...</p>}
+                  {servicesError && <p className="text-red-500">Error loading services: {servicesError.message}</p>}
+                  {!servicesLoading && !servicesError && services.length === 0 && (
+                    <div className="text-center py-8">
+                      <Settings className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                      <p className="text-muted-foreground">No services found for this business.</p>
+                      <p className="text-sm text-muted-foreground">
+                        Click "Add New Service" to get started.
+                      </p>
+                    </div>
+                  )}
+                  {!servicesLoading && !servicesError && services.length > 0 && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {services.map((service: ServiceType) => (
+                        <Card key={service.id} className="relative">
+                          <CardContent className="p-4">
+                            <div className="flex items-start justify-between mb-3">
+                              <div className="flex-1">
+                                <h3 className="font-semibold">{service.name}</h3>
+                                <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                                  {service.description}
+                                </p>
+                              </div>
+                              <Switch checked={service.is_active || false} />
                             </div>
-                            <Switch checked={service.isActive} />
-                          </div>
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <p className="text-lg font-bold text-primary">N${service.price}</p>
-                              <p className="text-xs text-muted-foreground">{service.duration}</p>
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <p className="text-lg font-bold text-primary">
+                                  {service.currency || userBusiness?.currency || 'N$'}{service.price}
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                  {service.duration_minutes ? `${service.duration_minutes} min` : 'N/A'}
+                                </p>
+                              </div>
+                              <Button variant="outline" size="sm" onClick={() => toast.info(`Edit service: ${service.name} (TODO)`)}>
+                                <Edit className="h-4 w-4" />
+                              </Button>
                             </div>
-                            <Button variant="outline" size="sm">
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
@@ -548,7 +550,7 @@ const BusinessDashboard = () => {
                             </div>
                             <div>
                               <p className="font-medium">{service.name}</p>
-                              <p className="text-sm text-muted-foreground">N${service.price}</p>
+                              <p className="text-sm text-muted-foreground">{userBusiness?.currency || 'N$'}{service.price}</p>
                             </div>
                           </div>
                           <div className="text-right">
@@ -577,35 +579,36 @@ const BusinessDashboard = () => {
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="category">Category</Label>
-                      <Select defaultValue={userBusiness.category}>
+                      <Select defaultValue={userBusiness.category_id || undefined}>
                         <SelectTrigger>
-                          <SelectValue />
+                          <SelectValue placeholder="Select category"/>
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="hair-salon">Hair & Beauty Salon</SelectItem>
-                          <SelectItem value="restaurant">Restaurant</SelectItem>
-                          <SelectItem value="auto">Auto Services</SelectItem>
+                          {/* TODO: Populate with actual categories from DB - this requires a useCategories hook */}
+                          <SelectItem value="placeholder-cat-1">Hair & Beauty Salon</SelectItem>
+                          <SelectItem value="placeholder-cat-2">Restaurant</SelectItem>
+                          <SelectItem value="placeholder-cat-3">Auto Services</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="phone">Phone Number</Label>
-                      <Input id="phone" defaultValue={userBusiness.phone} />
+                      <Input id="phone" defaultValue={userBusiness.phone || ""} />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="email">Email Address</Label>
-                      <Input id="email" type="email" defaultValue={userBusiness.email} />
+                      <Input id="email" type="email" defaultValue={userBusiness.email || ""} />
                     </div>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="address">Address</Label>
-                    <Input id="address" defaultValue={userBusiness.address} />
+                    <Input id="address" defaultValue={`${userBusiness.street_address || ''}${userBusiness.city ? ', ' + userBusiness.city : ''}`} />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="description">Business Description</Label>
                     <Textarea 
                       id="description" 
-                      defaultValue={userBusiness.description}
+                      defaultValue={userBusiness.description || ""}
                       rows={4}
                     />
                   </div>

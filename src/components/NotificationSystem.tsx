@@ -12,7 +12,8 @@ import {
   Info,
   Heart,
   Settings,
-  MoreHorizontal
+  MoreHorizontal,
+  Loader2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -29,211 +30,87 @@ import {
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Separator } from "@/components/ui/separator";
-import { toast } from "@/hooks/use-toast";
-
-interface Notification {
-  id: string;
-  type: "booking" | "message" | "review" | "payment" | "reminder" | "promotion" | "system";
-  title: string;
-  message: string;
-  timestamp: Date;
-  isRead: boolean;
-  isImportant: boolean;
-  actionUrl?: string;
-  businessName?: string;
-  businessImage?: string;
-  metadata?: {
-    bookingId?: string;
-    amount?: number;
-    rating?: number;
-    serviceName?: string;
-  };
-}
+import useNotifications, { Notification } from "@/hooks/useNotifications";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast as sonnerToast } from "sonner";
 
 const NotificationSystem = () => {
-  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const { user } = useAuth();
+  const {
+    notifications,
+    loading,
+    error,
+    markAsRead,
+    markAllAsRead,
+    deleteNotification,
+    fetchNotifications
+  } = useNotifications();
+
   const [isOpen, setIsOpen] = useState(false);
   const [filter, setFilter] = useState<"all" | "unread" | "important">("all");
 
-  // Mock notifications data
-  useEffect(() => {
-    const mockNotifications: Notification[] = [
-      {
-        id: "1",
-        type: "booking",
-        title: "Booking Confirmed",
-        message: "Your appointment at Namibia Hair Studio has been confirmed for tomorrow at 10:00 AM",
-        timestamp: new Date(Date.now() - 1000 * 60 * 30), // 30 minutes ago
-        isRead: false,
-        isImportant: true,
-        actionUrl: "/booking/123456",
-        businessName: "Namibia Hair Studio",
-        businessImage: "https://images.unsplash.com/photo-1560066984-138dadb4c035",
-        metadata: {
-          bookingId: "123456",
-          serviceName: "Women's Haircut"
-        }
-      },
-      {
-        id: "2",
-        type: "reminder",
-        title: "Appointment Reminder",
-        message: "Don't forget your appointment at Desert Rose Spa in 2 hours",
-        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2), // 2 hours ago
-        isRead: false,
-        isImportant: true,
-        actionUrl: "/booking/789012",
-        businessName: "Desert Rose Spa",
-        businessImage: "https://images.unsplash.com/photo-1544161515-4ab6ce6db874",
-        metadata: {
-          bookingId: "789012",
-          serviceName: "Relaxing Massage"
-        }
-      },
-      {
-        id: "3",
-        type: "message",
-        title: "New Message",
-        message: "Kalahari Auto Care sent you a message about your upcoming service",
-        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 4), // 4 hours ago
-        isRead: true,
-        isImportant: false,
-        actionUrl: "/messages/345678",
-        businessName: "Kalahari Auto Care",
-        businessImage: "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3"
-      },
-      {
-        id: "4",
-        type: "review",
-        title: "Review Request",
-        message: "How was your experience at Namibia Hair Studio? Leave a review to help others",
-        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24), // 1 day ago
-        isRead: true,
-        isImportant: false,
-        actionUrl: "/review/123456",
-        businessName: "Namibia Hair Studio",
-        businessImage: "https://images.unsplash.com/photo-1560066984-138dadb4c035",
-        metadata: {
-          bookingId: "123456"
-        }
-      },
-      {
-        id: "5",
-        type: "payment",
-        title: "Payment Successful",
-        message: "Your payment of N$250 for Women's Haircut has been processed",
-        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2), // 2 days ago
-        isRead: true,
-        isImportant: false,
-        actionUrl: "/payment/receipt/123456",
-        businessName: "Namibia Hair Studio",
-        metadata: {
-          amount: 250,
-          serviceName: "Women's Haircut"
-        }
-      },
-      {
-        id: "6",
-        type: "promotion",
-        title: "Special Offer",
-        message: "Get 20% off your next booking at Desert Rose Spa. Limited time offer!",
-        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3), // 3 days ago
-        isRead: false,
-        isImportant: false,
-        actionUrl: "/business/2",
-        businessName: "Desert Rose Spa",
-        businessImage: "https://images.unsplash.com/photo-1544161515-4ab6ce6db874"
-      },
-      {
-        id: "7",
-        type: "system",
-        title: "App Update Available",
-        message: "A new version of Afro-Connect is available with improved features",
-        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5), // 5 days ago
-        isRead: true,
-        isImportant: false,
-        actionUrl: "/app-update"
-      }
-    ];
-
-    setNotifications(mockNotifications);
-  }, []);
-
-  const getNotificationIcon = (type: string) => {
+  const getNotificationIcon = (type: Notification['type']) => {
     switch (type) {
-      case "booking": return Calendar;
-      case "message": return MessageSquare;
-      case "review": return Star;
-      case "payment": return DollarSign;
-      case "reminder": return Clock;
-      case "promotion": return Heart;
-      case "system": return Settings;
-      default: return Bell;
+      case "booking_confirmed":
+      case "booking_cancelled":
+      case "booking_reminder": 
+        return Calendar;
+      case "message_received":
+        return MessageSquare;
+      case "review_received":
+      case "review_response": 
+        return Star;
+      case "payment_received": 
+        return DollarSign;
+      case "business_approved": return CheckCircle;
+      case "system_announcement": return Info;
+      case "marketing_alert": return Heart;
+      default: 
+        console.warn('Unknown notification type for icon:', type);
+        return Bell;
     }
   };
 
-  const getNotificationColor = (type: string) => {
+  const getNotificationColor = (type: Notification['type']) => {
     switch (type) {
-      case "booking": return "text-blue-600 bg-blue-100";
-      case "message": return "text-green-600 bg-green-100";
-      case "review": return "text-yellow-600 bg-yellow-100";
-      case "payment": return "text-emerald-600 bg-emerald-100";
-      case "reminder": return "text-orange-600 bg-orange-100";
-      case "promotion": return "text-pink-600 bg-pink-100";
-      case "system": return "text-gray-600 bg-gray-100";
-      default: return "text-blue-600 bg-blue-100";
+      case "booking_confirmed": return "text-blue-600 bg-blue-100";
+      case "booking_cancelled": return "text-red-600 bg-red-100";
+      case "booking_reminder": return "text-orange-600 bg-orange-100";
+      case "review_received":
+      case "review_response": 
+        return "text-yellow-600 bg-yellow-100";
+      case "payment_received": return "text-emerald-600 bg-emerald-100";
+      case "business_approved": return "text-green-600 bg-green-100";
+      case "system_announcement": return "text-gray-600 bg-gray-100";
+      case "marketing_alert": return "text-pink-600 bg-pink-100";
+      default: 
+        console.warn('Unknown notification type for color:', type);
+        return "text-gray-600 bg-gray-100";
     }
-  };
-
-  const markAsRead = (notificationId: string) => {
-    setNotifications(prev => 
-      prev.map(notification => 
-        notification.id === notificationId 
-          ? { ...notification, isRead: true }
-          : notification
-      )
-    );
-  };
-
-  const markAllAsRead = () => {
-    setNotifications(prev => 
-      prev.map(notification => ({ ...notification, isRead: true }))
-    );
-    toast({
-      title: "All notifications marked as read",
-      description: "Your notification list has been updated",
-    });
-  };
-
-  const deleteNotification = (notificationId: string) => {
-    setNotifications(prev => 
-      prev.filter(notification => notification.id !== notificationId)
-    );
-    toast({
-      title: "Notification deleted",
-      description: "The notification has been removed",
-    });
   };
 
   const filteredNotifications = notifications.filter(notification => {
+    if (!notification) return false;
     switch (filter) {
-      case "unread": return !notification.isRead;
-      case "important": return notification.isImportant;
+      case "unread": return !notification.is_read;
+      case "important": return notification.data && (notification.data as any).isImportant === true;
       default: return true;
     }
   });
 
-  const unreadCount = notifications.filter(n => !n.isRead).length;
-  const importantCount = notifications.filter(n => n.isImportant && !n.isRead).length;
+  const unreadCount = notifications.filter(n => n && !n.is_read).length;
+  const importantCount = notifications.filter(n => n && !n.is_read && n.data && (n.data as any).isImportant === true).length;
 
-  const formatTimestamp = (timestamp: Date) => {
+  const formatTimestamp = (timestampString: string | null | undefined) => {
+    if (!timestampString) return '';
+    const timestamp = new Date(timestampString);
     const now = new Date();
     const diff = now.getTime() - timestamp.getTime();
     const minutes = Math.floor(diff / (1000 * 60));
     const hours = Math.floor(diff / (1000 * 60 * 60));
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
 
+    if (minutes < 1) return 'just now';
     if (minutes < 60) {
       return `${minutes}m ago`;
     } else if (hours < 24) {
@@ -242,6 +119,10 @@ const NotificationSystem = () => {
       return `${days}d ago`;
     }
   };
+
+  if (!user) {
+    return null;
+  }
 
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
@@ -262,38 +143,43 @@ const NotificationSystem = () => {
         <div className="border-b p-4">
           <div className="flex items-center justify-between mb-3">
             <h3 className="font-semibold text-lg">Notifications</h3>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
               {unreadCount > 0 && (
-                <Button variant="ghost" size="sm" onClick={markAllAsRead}>
+                <Button variant="link" size="sm" onClick={() => markAllAsRead()} className="p-1 text-xs">
                   Mark all read
                 </Button>
               )}
-              <Button variant="ghost" size="sm" onClick={() => setIsOpen(false)}>
+              <Button variant="ghost" size="icon" onClick={() => fetchNotifications()} className="h-7 w-7">
+                 <Loader2 className={`h-3 w-3 ${loading ? 'animate-spin' : ''}`} />
+              </Button>
+              <Button variant="ghost" size="icon" onClick={() => setIsOpen(false)} className="h-7 w-7">
                 <X className="h-4 w-4" />
               </Button>
             </div>
           </div>
           
-          {/* Filter Tabs */}
           <div className="flex gap-1">
             <Button
-              variant={filter === "all" ? "default" : "ghost"}
+              variant={filter === "all" ? "secondary" : "ghost"}
               size="sm"
               onClick={() => setFilter("all")}
+              className="flex-1"
             >
               All ({notifications.length})
             </Button>
             <Button
-              variant={filter === "unread" ? "default" : "ghost"}
+              variant={filter === "unread" ? "secondary" : "ghost"}
               size="sm"
               onClick={() => setFilter("unread")}
+              className="flex-1"
             >
               Unread ({unreadCount})
             </Button>
             <Button
-              variant={filter === "important" ? "default" : "ghost"}
+              variant={filter === "important" ? "secondary" : "ghost"}
               size="sm"
               onClick={() => setFilter("important")}
+              className="flex-1"
             >
               Important ({importantCount})
             </Button>
@@ -301,96 +187,109 @@ const NotificationSystem = () => {
         </div>
 
         <div className="max-h-96 overflow-y-auto">
-          {filteredNotifications.length === 0 ? (
-            <div className="p-6 text-center">
-              <Bell className="h-12 w-12 mx-auto text-muted-foreground opacity-50 mb-4" />
-              <p className="text-muted-foreground">
+          {loading && (
+            <div className="p-6 text-center flex flex-col items-center justify-center h-32">
+              <Loader2 className="h-8 w-8 animate-spin text-primary mb-2" />
+              <p className="text-muted-foreground text-sm">Loading notifications...</p>
+            </div>
+          )}
+          {!loading && error && (
+            <div className="p-6 text-center flex flex-col items-center justify-center h-32">
+              <AlertCircle className="h-8 w-8 text-red-500 mb-2" />
+              <p className="text-muted-foreground text-sm">Error loading notifications.</p>
+              <Button variant="link" size="sm" onClick={() => fetchNotifications()} className="mt-2">
+                Try again
+              </Button>
+            </div>
+          )}
+          {!loading && !error && filteredNotifications.length === 0 && (
+            <div className="p-6 text-center flex flex-col items-center justify-center h-32">
+              <Bell className="h-10 w-10 mx-auto text-muted-foreground opacity-30 mb-3" />
+              <p className="text-muted-foreground text-sm">
                 {filter === "unread" ? "No unread notifications" : 
                  filter === "important" ? "No important notifications" : 
-                 "No notifications"}
+                 "You're all caught up!"}
               </p>
             </div>
-          ) : (
-            <div className="divide-y">
+          )}
+          {!loading && !error && filteredNotifications.length > 0 && (
+            <div className="divide-y divide-border">
               {filteredNotifications.map((notification) => {
+                if (!notification) return null;
                 const IconComponent = getNotificationIcon(notification.type);
                 const colorClasses = getNotificationColor(notification.type);
-                
+                const actionUrl = (notification.data as any)?.actionUrl || notification.message;
+                const isClickable = !!(notification.data as any)?.actionUrl;
+
                 return (
                   <div
                     key={notification.id}
-                    className={`p-4 hover:bg-gray-50 transition-colors cursor-pointer ${
-                      !notification.isRead ? "bg-blue-50/50" : ""
+                    className={`p-3 hover:bg-muted/50 transition-colors ${
+                      !notification.is_read ? "bg-primary/5" : ""
                     }`}
-                    onClick={() => {
-                      markAsRead(notification.id);
-                      if (notification.actionUrl) {
-                        // Navigate to action URL
-                        window.location.href = notification.actionUrl;
-                      }
-                    }}
                   >
                     <div className="flex items-start gap-3">
-                      <div className={`p-2 rounded-full ${colorClasses} flex-shrink-0`}>
-                        <IconComponent className="h-4 w-4" />
+                      <div className={`mt-1 p-1.5 rounded-full ${colorClasses} flex-shrink-0`}>
+                        <IconComponent className="h-3.5 w-3.5" />
                       </div>
                       
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-1">
-                              <p className={`font-medium text-sm ${!notification.isRead ? "text-gray-900" : "text-gray-700"}`}>
-                                {notification.title}
-                              </p>
-                              {notification.isImportant && (
-                                <Badge variant="destructive" className="text-xs">
-                                  Important
-                                </Badge>
-                              )}
-                              {!notification.isRead && (
-                                <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
-                              )}
-                            </div>
+                            <p className={`font-medium text-sm leading-tight ${!notification.is_read ? "text-foreground" : "text-muted-foreground"}`}>
+                              {notification.title}
+                            </p>
                             
-                            <p className="text-sm text-muted-foreground line-clamp-2">
+                            <p className="text-xs text-muted-foreground line-clamp-2 leading-normal mt-0.5">
                               {notification.message}
                             </p>
                             
-                            <div className="flex items-center gap-2 mt-2">
-                              {notification.businessName && (
-                                <div className="flex items-center gap-1">
-                                  {notification.businessImage && (
-                                    <Avatar className="h-4 w-4">
-                                      <AvatarImage src={notification.businessImage} />
-                                      <AvatarFallback className="text-xs">
-                                        {notification.businessName.charAt(0)}
-                                      </AvatarFallback>
-                                    </Avatar>
-                                  )}
-                                  <span className="text-xs text-muted-foreground">
-                                    {notification.businessName}
-                                  </span>
-                                </div>
+                            <div className="flex items-center gap-2 mt-1.5">
+                              {(notification.data as any)?.businessName && (
+                                <span className="text-xs text-muted-foreground">
+                                  {(notification.data as any).businessName}
+                                </span>
                               )}
                               <span className="text-xs text-muted-foreground">
-                                {formatTimestamp(notification.timestamp)}
+                                {formatTimestamp(notification.created_at)}
                               </span>
+                              {notification.data && (notification.data as any).isImportant === true && (
+                                <Badge variant="outline" className="text-xs border-red-500 text-red-500 py-0 px-1.5">
+                                  Important
+                                </Badge>
+                              )}
+                              {!notification.is_read && (
+                                <div className="w-1.5 h-1.5 bg-primary rounded-full ml-auto mr-1"></div>
+                              )}
                             </div>
+                             {isClickable && (
+                                <Button 
+                                  variant="link" 
+                                  size="sm" 
+                                  className="p-0 h-auto text-xs mt-1 text-primary hover:underline"
+                                  onClick={() => {
+                                    markAsRead(notification.id);
+                                    sonnerToast.info(`Navigating to: ${actionUrl}`)
+                                  }}
+                                >
+                                  View Details
+                                </Button>
+                              )}
                           </div>
                           
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-                                <MoreHorizontal className="h-3 w-3" />
+                              <Button variant="ghost" size="icon" className="h-7 w-7 flex-shrink-0">
+                                <MoreHorizontal className="h-4 w-4" />
                               </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              {!notification.isRead && (
+                            <DropdownMenuContent align="end" className="w-48">
+                              {!notification.is_read && (
                                 <DropdownMenuItem onClick={(e) => {
                                   e.stopPropagation();
                                   markAsRead(notification.id);
                                 }}>
-                                  <CheckCircle className="mr-2 h-4 w-4" />
+                                  <CheckCircle className="mr-2 h-3.5 w-3.5" />
                                   Mark as read
                                 </DropdownMenuItem>
                               )}
@@ -399,9 +298,9 @@ const NotificationSystem = () => {
                                   e.stopPropagation();
                                   deleteNotification(notification.id);
                                 }}
-                                className="text-red-600"
+                                className="text-red-500 hover:!text-red-500 focus:!text-red-500"
                               >
-                                <X className="mr-2 h-4 w-4" />
+                                <X className="mr-2 h-3.5 w-3.5" />
                                 Delete
                               </DropdownMenuItem>
                             </DropdownMenuContent>
@@ -416,12 +315,12 @@ const NotificationSystem = () => {
           )}
         </div>
 
-        {filteredNotifications.length > 0 && (
-          <div className="border-t p-3">
-            <Button variant="ghost" className="w-full text-sm" asChild>
-              <a href="/notifications">
+        {notifications.length > 0 && (
+          <div className="border-t border-border p-2">
+            <Button variant="ghost" className="w-full text-sm text-muted-foreground hover:text-primary" asChild>
+              <span onClick={() => sonnerToast.info('Navigate to full notifications page (TODO)')}>
                 View All Notifications
-              </a>
+              </span>
             </Button>
           </div>
         )}

@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { 
   User, Mail, Phone, MapPin, Edit, LogOut, 
   Calendar, Heart, Settings, Bell, Shield,
   Camera, Star, Clock, Award, TrendingUp,
-  CreditCard, Gift, HelpCircle
+  CreditCard, Gift, HelpCircle, Loader2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -25,17 +25,24 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
+import { useBookings } from "@/hooks/useBookings";
+import { useFavorites } from "@/hooks/useFavorites";
 
 const UserProfile = () => {
+  const { user, profile, loading: authLoading } = useAuth();
+  const { bookings, loading: bookingsLoading } = useBookings();
+  const { favorites, loading: favoritesLoading } = useFavorites();
+  
   const [isEditing, setIsEditing] = useState(false);
   const [profileData, setProfileData] = useState({
-    firstName: "Amara",
-    lastName: "Nakamura",
-    email: "amara.nakamura@example.com",
-    phone: "+264 81 123 4567",
-    location: "Windhoek, Namibia",
-    bio: "Love discovering new businesses and experiences in Namibia!",
-    joinDate: "May 2023"
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    location: "",
+    bio: "",
+    joinDate: ""
   });
 
   const [preferences, setPreferences] = useState({
@@ -47,13 +54,78 @@ const UserProfile = () => {
     currency: "NAD"
   });
 
-  // Mock user stats
+  // Load user data when profile is available
+  useEffect(() => {
+    if (profile) {
+      setProfileData({
+        firstName: profile.first_name || "",
+        lastName: profile.last_name || "",
+        email: profile.email || user?.email || "",
+        phone: profile.phone || "",
+        location: profile.location_city ? `${profile.location_city}${profile.location_region ? ', ' + profile.location_region : ''}` : "",
+        bio: "", // Bio field doesn't exist in users table yet
+        joinDate: profile.created_at ? new Date(profile.created_at).toLocaleDateString('en-US', { 
+          year: 'numeric', 
+          month: 'long' 
+        }) : ""
+      });
+    } else if (user && !profile) {
+      // Fallback to user metadata if profile not loaded
+      setProfileData({
+        firstName: user.user_metadata?.first_name || "",
+        lastName: user.user_metadata?.last_name || "",
+        email: user.email || "",
+        phone: user.user_metadata?.phone || "",
+        location: "",
+        bio: "",
+        joinDate: user.created_at ? new Date(user.created_at).toLocaleDateString('en-US', { 
+          year: 'numeric', 
+          month: 'long' 
+        }) : ""
+      });
+    }
+  }, [profile, user]);
+
+  // Calculate real user stats
+  const userBookings = bookings?.filter(b => b.customer_id === user?.id) || [];
+  const completedBookings = userBookings.filter(b => b.status === 'completed');
   const userStats = {
-    totalBookings: 12,
-    favoriteBusinesses: 8,
-    reviewsWritten: 5,
-    membershipLevel: "Gold"
+    totalBookings: userBookings.length,
+    favoriteBusinesses: favorites?.length || 0,
+    reviewsWritten: 0, // TODO: Implement when reviews are connected
+    membershipLevel: userBookings.length >= 10 ? "Gold" : userBookings.length >= 5 ? "Silver" : "Bronze"
   };
+
+  if (authLoading) {
+    return (
+      <div className="pt-16 pb-24 bg-gradient-to-br from-purple-50 to-pink-50 min-h-screen">
+        <div className="container mx-auto px-4">
+          <div className="max-w-6xl mx-auto flex items-center justify-center h-64">
+            <div className="text-center">
+              <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+              <p className="text-muted-foreground">Loading profile...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="pt-16 pb-24 bg-gradient-to-br from-purple-50 to-pink-50 min-h-screen">
+        <div className="container mx-auto px-4">
+          <div className="max-w-6xl mx-auto text-center">
+            <h1 className="text-2xl font-bold mb-4">Please Sign In</h1>
+            <p className="text-muted-foreground mb-6">You need to be signed in to view your profile.</p>
+            <Button asChild>
+              <Link to="/login">Sign In</Link>
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const handleSaveProfile = () => {
     setIsEditing(false);
@@ -72,8 +144,8 @@ const UserProfile = () => {
     setPreferences(prev => ({ ...prev, [key]: value }));
   };
 
-  const StatCard = ({ icon: Icon, title, value, color }: { 
-    icon: any, title: string, value: string | number, color: string 
+  const StatCard = ({ icon: Icon, title, value, color, loading = false }: { 
+    icon: any, title: string, value: string | number, color: string, loading?: boolean 
   }) => (
     <Card className="hover:shadow-md transition-shadow">
       <CardContent className="p-4">
@@ -83,7 +155,14 @@ const UserProfile = () => {
           </div>
           <div>
             <p className="text-sm text-muted-foreground">{title}</p>
-            <p className="text-xl font-bold">{value}</p>
+            {loading ? (
+              <div className="flex items-center gap-2">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span className="text-sm">Loading...</span>
+              </div>
+            ) : (
+              <p className="text-xl font-bold">{value}</p>
+            )}
           </div>
         </div>
       </CardContent>
@@ -157,12 +236,14 @@ const UserProfile = () => {
                       title="Total Bookings" 
                       value={userStats.totalBookings} 
                       color="bg-gradient-to-r from-blue-500 to-blue-600"
+                      loading={bookingsLoading}
                     />
                     <StatCard 
                       icon={Heart} 
                       title="Favorites" 
                       value={userStats.favoriteBusinesses} 
                       color="bg-gradient-to-r from-red-500 to-pink-500"
+                      loading={favoritesLoading}
                     />
                     <StatCard 
                       icon={Star} 
@@ -172,8 +253,8 @@ const UserProfile = () => {
                     />
                     <StatCard 
                       icon={Award} 
-                      title="Points Earned" 
-                      value="1,250" 
+                      title="Membership Level" 
+                      value={userStats.membershipLevel} 
                       color="bg-gradient-to-r from-purple-500 to-indigo-500"
                     />
                   </div>

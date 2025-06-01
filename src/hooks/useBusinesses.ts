@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Database } from '@/integrations/supabase/types';
 
 type Business = Database['public']['Tables']['businesses']['Row'];
-type BusinessWithCategory = Business & {
+export type BusinessWithCategory = Business & {
   categories: Database['public']['Tables']['categories']['Row'] | null;
   services: Database['public']['Tables']['services']['Row'][];
   business_hours: Database['public']['Tables']['business_hours']['Row'][];

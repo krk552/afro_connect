@@ -108,13 +108,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setSession(session);
         setUser(session?.user ?? null);
         
-        if (session?.user) {
-          console.log('👤 User authenticated, fetching profile...');
+        if (event === 'SIGNED_IN' && session?.user) {
+          console.log('👤 User signed in, fetching profile and updating last_login_at...');
           const profileData = await fetchProfile(session.user.id);
           setProfile(profileData);
-        } else {
+          
+          // Update last_login_at
+          try {
+            const { error: updateError } = await supabase
+              .from('users')
+              .update({ last_login_at: new Date().toISOString() })
+              .eq('id', session.user.id);
+            if (updateError) {
+              console.error('❌ Error updating last_login_at:', updateError);
+            }
+          } catch (e) {
+            console.error('❌ Exception updating last_login_at:', e);
+          }
+
+        } else if (session?.user) {
+          // Handle other events like TOKEN_REFRESHED, USER_UPDATED if needed
+          // For now, just fetch profile if user exists but event is not SIGNED_IN
+          console.log('👤 Session exists or refreshed, fetching profile...');
+          const profileData = await fetchProfile(session.user.id);
+          setProfile(profileData);
+        } else if (event === 'SIGNED_OUT') {
           console.log('👤 User signed out, clearing profile');
           setProfile(null);
+          // Optionally, redirect to login page on sign out
+          // navigate('/login');
         }
         
         setLoading(false);
@@ -224,24 +246,44 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Sign in function
   const signIn = async (email: string, password: string) => {
+    setLoading(true);
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      console.log('🔵 Attempting sign-in for:', email);
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
-      // Update last login time
-      if (!error && user) {
-        await supabase
-          .from('users')
-          .update({ last_login_at: new Date().toISOString() })
-          .eq('id', user.id);
+      if (error) {
+        console.error('❌ Sign-in error from Supabase:', error);
+        setUser(null); // Ensure user is null if Supabase auth fails
+        setProfile(null); // Ensure profile is null
+        setSession(null);
+        setLoading(false);
+        return { error };
       }
 
-      return { error };
+      // If signInWithPassword is successful, onAuthStateChange will handle setting user, session, and profile.
+      // We don't need to manually set them here, as that might cause race conditions or use stale data.
+      console.log('✅ Sign-in successful via Supabase for:', data.user?.email);
+      // The onAuthStateChange listener will now pick up the new session and update user/profile.
+      // It will also call setLoading(false) when it's done.
+
+      // We can still update last_login_at here if needed, but ensure it refers to the successfully logged-in user.
+      // However, it might be better to move this to onAuthStateChange when event is 'SIGNED_IN'
+      // and we are sure the profile is also loaded.
+      // For now, let's rely on onAuthStateChange to set the user state correctly.
+
+      return { error: null }; // Indicates success to the caller page
     } catch (error) {
+      console.error('❌ Uncaught sign-in error:', error);
+      setUser(null);
+      setProfile(null);
+      setSession(null);
+      setLoading(false);
       return { error: error as AuthError };
     }
+    // setLoading(false) will be handled by onAuthStateChange or error blocks
   };
 
   // Sign out function

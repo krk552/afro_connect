@@ -6,7 +6,8 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { toast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
@@ -14,20 +15,25 @@ const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const { signIn } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
-    
-    // Simulate login process
-    setTimeout(() => {
-      setIsLoading(false);
-      toast({
-        title: "Welcome back!",
-        description: "You have successfully signed in to Afro-Connect.",
-      });
+
+    console.log('Attempting login for:', email);
+    const { error } = await signIn(email, password);
+
+    setIsLoading(false);
+
+    if (error) {
+      console.error('Login page error:', error.message);
+      toast.error(error.message || "Invalid login credentials. Please try again.");
+    } else {
+      console.log('Login page: sign in successful, navigating...');
+      toast.success("Welcome back! You've successfully signed in.");
       navigate("/");
-    }, 1000);
+    }
   };
 
   return (
