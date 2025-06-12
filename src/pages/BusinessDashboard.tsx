@@ -149,7 +149,21 @@ const BusinessDashboard = () => {
     };
     const { error } = await addService(newServiceData);
     if (!error) {
+      toast({
+        title: "Service added",
+        description: "Your new service has been added successfully.",
+        variant: "default",
+      });
+      // Refresh services list
+      if (userBusiness?.id) {
+        await fetchBusinessServices(userBusiness.id);
+      }
     } else {
+      toast({
+        title: "Failed to add service",
+        description: error.message || "An error occurred while adding the service.",
+        variant: "destructive",
+      });
     }
   };
 

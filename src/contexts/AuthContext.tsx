@@ -1,7 +1,9 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session, AuthError } from '@supabase/supabase-js';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase, handleSupabaseError } from '@/integrations/supabase/client';
 import { Database } from '@/integrations/supabase/types';
+import { useNavigate } from 'react-router-dom';
+import { toast } from '@/hooks/use-toast';
 
 type UserProfile = Database['public']['Tables']['users']['Row'];
 
@@ -10,6 +12,7 @@ interface AuthContextType {
   profile: UserProfile | null;
   session: Session | null;
   loading: boolean;
+  isAuthenticated: boolean;
   signUp: (email: string, password: string, userData: {
     firstName: string;
     lastName: string;
@@ -21,25 +24,28 @@ interface AuthContextType {
     message?: string;
   }>;
   signIn: (email: string, password: string) => Promise<{ error: AuthError | null }>;
+  signInWithProvider: (provider: 'google' | 'facebook') => Promise<{ error: AuthError | null }>;
   signOut: () => Promise<{ error: AuthError | null }>;
   resetPassword: (email: string) => Promise<{ error: AuthError | null }>;
   resendConfirmation: (email: string) => Promise<{ error: AuthError | null }>;
   updateProfile: (updates: Partial<UserProfile>) => Promise<{ error: Error | null }>;
   refreshProfile: () => Promise<void>;
+  isBusinessOwner: () => boolean;
+  isAdmin: () => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-
-  // Fetch user profile from our users table
-  const fetchProfile = async (userId: string): Promise<UserProfile | null> => {
+  const navigate = useNavigate();
+  
+  // Fetch user profile from the database
+  const fetchUserProfile = async (userId: string) => {
     try {
-      console.log('🔍 Fetching profile for user:', userId);
       const { data, error } = await supabase
         .from('users')
         .select('*')
@@ -62,7 +68,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Refresh profile data
   const refreshProfile = async () => {
     if (user) {
-      const profileData = await fetchProfile(user.id);
+      const profileData = await fetchUserProfile(user.id);
       setProfile(profileData);
     }
   };
@@ -85,7 +91,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       if (session?.user) {
         console.log('👤 User found in session, fetching profile...');
-        fetchProfile(session.user.id).then((profileData) => {
+        fetchUserProfile(session.user.id).then((profileData) => {
           console.log('📝 Profile data:', profileData);
           setProfile(profileData);
         });
@@ -110,7 +116,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         
         if (event === 'SIGNED_IN' && session?.user) {
           console.log('👤 User signed in, fetching profile and updating last_login_at...');
-          const profileData = await fetchProfile(session.user.id);
+          const profileData = await fetchUserProfile(session.user.id);
           setProfile(profileData);
           
           // Update last_login_at
@@ -130,7 +136,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           // Handle other events like TOKEN_REFRESHED, USER_UPDATED if needed
           // For now, just fetch profile if user exists but event is not SIGNED_IN
           console.log('👤 Session exists or refreshed, fetching profile...');
-          const profileData = await fetchProfile(session.user.id);
+          const profileData = await fetchUserProfile(session.user.id);
           setProfile(profileData);
         } else if (event === 'SIGNED_OUT') {
           console.log('👤 User signed out, clearing profile');
@@ -202,101 +208,83 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       // If user was created but needs email confirmation
       if (data.user && !data.session) {
-        // User needs to confirm email
-        console.log('User created, email confirmation required');
         return { 
           error: null, 
           needsEmailConfirmation: true,
-          message: 'Please check your email and click the confirmation link to complete your registration.'
+          message: 'Please check your email for a confirmation link.'
         };
       }
 
-      // If user was created and is immediately signed in (email confirmation disabled)
-      if (data.user && data.session) {
-        // Create user profile in our users table
+      if (data?.user) {
         const { error: profileError } = await supabase
           .from('users')
-          .insert({
-            id: data.user.id,
-            email: email,
-            first_name: userData.firstName,
-            last_name: userData.lastName,
-            phone: userData.phone,
-            role: userData.role || 'customer',
-            email_verified: data.user.email_confirmed_at ? true : false,
-            is_active: true,
-          });
+          .insert([
+            {
+              id: data.user.id,
+              email: email,
+              first_name: userData.firstName,
+              last_name: userData.lastName,
+              phone: userData.phone || null,
+              role: userData.role || 'customer',
+              email_verified: false,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            },
+          ]);
 
         if (profileError) {
-          console.error('Error creating profile:', profileError);
-          return { 
-            error: { message: 'Account created but profile setup failed. Please contact support.' } as AuthError 
-          };
+          console.error('Error creating user profile:', profileError);
+          return { error: profileError };
         }
-
-        return { error: null, message: 'Account created successfully!' };
       }
 
       return { error: null };
     } catch (error) {
-      console.error('Signup error:', error);
-      return { error: error as AuthError };
+      console.error('Error during sign up:', error);
+      return { error };
     }
   };
 
-  // Sign in function
   const signIn = async (email: string, password: string) => {
-    setLoading(true);
     try {
-      console.log('🔵 Attempting sign-in for:', email);
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
-      if (error) {
-        console.error('❌ Sign-in error from Supabase:', error);
-        setUser(null); // Ensure user is null if Supabase auth fails
-        setProfile(null); // Ensure profile is null
-        setSession(null);
-        setLoading(false);
-        return { error };
-      }
-
-      // If signInWithPassword is successful, onAuthStateChange will handle setting user, session, and profile.
-      // We don't need to manually set them here, as that might cause race conditions or use stale data.
-      console.log('✅ Sign-in successful via Supabase for:', data.user?.email);
-      // The onAuthStateChange listener will now pick up the new session and update user/profile.
-      // It will also call setLoading(false) when it's done.
-
-      // We can still update last_login_at here if needed, but ensure it refers to the successfully logged-in user.
-      // However, it might be better to move this to onAuthStateChange when event is 'SIGNED_IN'
-      // and we are sure the profile is also loaded.
-      // For now, let's rely on onAuthStateChange to set the user state correctly.
-
-      return { error: null }; // Indicates success to the caller page
+      return { error };
     } catch (error) {
-      console.error('❌ Uncaught sign-in error:', error);
-      setUser(null);
-      setProfile(null);
-      setSession(null);
-      setLoading(false);
-      return { error: error as AuthError };
+      console.error('Error during sign in:', error);
+      return { error };
     }
-    // setLoading(false) will be handled by onAuthStateChange or error blocks
   };
 
-  // Sign out function
+  const signInWithProvider = async (provider: 'google' | 'facebook') => {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+
+      return { error };
+    } catch (error) {
+      console.error(`Error during ${provider} sign in:`, error);
+      return { error };
+    }
+  };
+
   const signOut = async () => {
     try {
       const { error } = await supabase.auth.signOut();
       return { error };
     } catch (error) {
-      return { error: error as AuthError };
+      console.error('Error during sign out:', error);
+      return { error };
     }
   };
 
-  // Reset password function
   const resetPassword = async (email: string) => {
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
@@ -304,32 +292,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
       return { error };
     } catch (error) {
-      return { error: error as AuthError };
+      console.error('Error during password reset:', error);
+      return { error };
     }
   };
 
-  // Resend confirmation email function
   const resendConfirmation = async (email: string) => {
     try {
       const { error } = await supabase.auth.resend({
         type: 'signup',
-        email: email,
-        options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback`
-        }
+        email,
       });
       return { error };
     } catch (error) {
-      return { error: error as AuthError };
+      console.error('Error resending confirmation:', error);
+      return { error };
     }
   };
 
-  // Update profile function
-  const updateProfile = async (updates: Partial<UserProfile>) => {
+  const updateProfile = async (updates: any) => {
     try {
-      if (!user) {
-        return { error: new Error('No user logged in') };
-      }
+      if (!user) throw new Error('User not authenticated');
 
       const { error } = await supabase
         .from('users')
@@ -339,38 +322,49 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         })
         .eq('id', user.id);
 
-      if (error) {
-        return { error: new Error(error.message) };
+      if (!error) {
+        await refreshProfile();
       }
 
-      // Refresh profile data
-      await refreshProfile();
-      return { error: null };
+      return { error };
     } catch (error) {
-      return { error: error as Error };
+      console.error('Error updating profile:', error);
+      return { error };
     }
   };
 
-  const value: AuthContextType = {
+  // This is intentionally left empty as we're removing the duplicate refreshProfile function
+
+  const isBusinessOwner = () => {
+    if (!profile) return false;
+    return profile.role === 'business_owner';
+  };
+
+  const isAdmin = () => {
+    if (!profile) return false;
+    return profile.role === 'admin';
+  };
+
+  const value = {
     user,
     profile,
     session,
     loading,
+    isAuthenticated: !!user,
     signUp,
     signIn,
+    signInWithProvider,
     signOut,
     resetPassword,
     resendConfirmation,
     updateProfile,
     refreshProfile,
+    isBusinessOwner,
+    isAdmin,
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
-}
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+};
 
 export function useAuth() {
   const context = useContext(AuthContext);

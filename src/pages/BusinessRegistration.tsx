@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Building2, ChevronRight, CheckCircle2, MapPin } from "lucide-react";
@@ -17,9 +16,15 @@ import {
   SelectTrigger, 
   SelectValue 
 } from "@/components/ui/select";
+import { useBusinessManagement } from "@/hooks/useBusinessManagement";
+import { useAuth } from "@/contexts/AuthContext";
+import { useCategories } from "@/hooks/useCategories";
 
 const BusinessRegistration = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { createBusiness, loading: submitting } = useBusinessManagement();
+  const { categories, loading: categoriesLoading } = useCategories();
   const [currentStep, setCurrentStep] = useState(1);
   const [isUploading, setIsUploading] = useState(false);
   const [formData, setFormData] = useState({
@@ -27,6 +32,7 @@ const BusinessRegistration = () => {
     category: "",
     address: "",
     city: "",
+    region: "Khomas", // Default region
     phone: "",
     email: "",
     website: "",
@@ -132,15 +138,89 @@ const BusinessRegistration = () => {
     }
   };
   
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    toast({
-      title: "Registration submitted successfully!",
-      description: "We'll review your information and get back to you shortly.",
-    });
     
-    // Show success message and then navigate after delay
-    setCurrentStep(totalSteps + 1); // Move to success screen
+    if (!user) {
+      toast({
+        title: "Authentication required",
+        description: "Please log in to register your business.",
+        variant: "destructive",
+      });
+      navigate("/login");
+      return;
+    }
+
+    // Validate required fields
+    if (!formData.businessName || !formData.category || !formData.address || 
+        !formData.city || !formData.phone || !formData.email || !formData.description) {
+      toast({
+        title: "Missing information",
+        description: "Please fill in all required fields.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      // Convert opening hours to the format expected by the database
+      const businessHours = Object.entries(formData.openingHours).map(([day, hours], index) => ({
+        day_of_week: index === 6 ? 0 : index + 1, // Sunday = 0, Monday = 1, etc.
+        open_time: hours.isOpen ? hours.open : null,
+        close_time: hours.isOpen ? hours.close : null,
+        is_closed: !hours.isOpen,
+      }));
+
+      // Convert services to the format expected by the database
+      const services = formData.services
+        .filter(service => service.name && service.description && service.price)
+        .map(service => ({
+          name: service.name,
+          description: service.description,
+          price: parseFloat(service.price),
+          duration_minutes: 60, // Default duration
+          currency: "NAD",
+          is_active: true,
+        }));
+
+      // Create business data object
+      const businessData = {
+        name: formData.businessName,
+        description: formData.description,
+        category_id: formData.category,
+        email: formData.email,
+        phone: formData.phone,
+        website: formData.website || undefined,
+        street_address: formData.address,
+        city: formData.city,
+        region: formData.region,
+        country: "Namibia",
+        price_range: "moderate" as const,
+        business_hours: businessHours,
+        services: services,
+      };
+
+      const result = await createBusiness(businessData);
+      
+      if (result.error) {
+        throw result.error;
+      }
+
+      toast({
+        title: "Registration submitted successfully!",
+        description: "We'll review your information and get back to you shortly.",
+      });
+      
+      // Show success message and then navigate after delay
+      setCurrentStep(totalSteps + 1); // Move to success screen
+    } catch (error) {
+      console.error("Business registration error:", error);
+      toast({
+        title: "Registration failed",
+        description: error instanceof Error ? error.message : "Failed to register business. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
   
   const renderStepContent = () => {
@@ -177,16 +257,17 @@ const BusinessRegistration = () => {
                       <SelectValue placeholder="Select a category" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="restaurant">Restaurant</SelectItem>
-                      <SelectItem value="salon">Hair & Beauty Salon</SelectItem>
-                      <SelectItem value="home-services">Home Services</SelectItem>
-                      <SelectItem value="auto">Auto Services</SelectItem>
-                      <SelectItem value="cleaning">Cleaning Services</SelectItem>
-                      <SelectItem value="events">Events & Entertainment</SelectItem>
-                      <SelectItem value="retail">Retail & Shopping</SelectItem>
-                      <SelectItem value="health">Health & Wellness</SelectItem>
-                      <SelectItem value="education">Education & Training</SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
+                      {categoriesLoading ? (
+                        <SelectItem value="" disabled>Loading categories...</SelectItem>
+                      ) : categories && categories.length > 0 ? (
+                        categories.map((category) => (
+                          <SelectItem key={category.id} value={category.id}>
+                            {category.name}
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <SelectItem value="" disabled>No categories available</SelectItem>
+                      )}
                     </SelectContent>
                   </Select>
                 </div>
@@ -237,19 +318,48 @@ const BusinessRegistration = () => {
                   <Label htmlFor="city">City<span className="text-destructive">*</span></Label>
                   <Select 
                     value={formData.city} 
-                    onValueChange={(value) => handleSelectChange("city", value)}
+                    onValueChange={(value) => {
+                      handleSelectChange("city", value);
+                      // Auto-set region based on city
+                      const cityRegionMap = {
+                        "Windhoek": "Khomas",
+                        "Walvis Bay": "Erongo",
+                        "Swakopmund": "Erongo",
+                        "Oshakati": "Oshana",
+                        "Rundu": "Kavango East",
+                        "Otjiwarongo": "Otjozondjupa",
+                        "Rehoboth": "Hardap",
+                        "Keetmanshoop": "Karas",
+                        "Tsumeb": "Oshikoto",
+                        "Gobabis": "Omaheke",
+                        "Katima Mulilo": "Zambezi",
+                        "Ondangwa": "Oshana",
+                        "Okahandja": "Otjozondjupa",
+                        "Outjo": "Kunene"
+                      };
+                      if (cityRegionMap[value]) {
+                        setFormData(prev => ({ ...prev, region: cityRegionMap[value] }));
+                      }
+                    }}
                   >
                     <SelectTrigger id="city">
                       <SelectValue placeholder="Select a city" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="windhoek">Windhoek</SelectItem>
-                      <SelectItem value="walvis-bay">Walvis Bay</SelectItem>
-                      <SelectItem value="swakopmund">Swakopmund</SelectItem>
-                      <SelectItem value="oshakati">Oshakati</SelectItem>
-                      <SelectItem value="rundu">Rundu</SelectItem>
-                      <SelectItem value="otjiwarongo">Otjiwarongo</SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
+                      <SelectItem value="Windhoek">Windhoek</SelectItem>
+                      <SelectItem value="Walvis Bay">Walvis Bay</SelectItem>
+                      <SelectItem value="Swakopmund">Swakopmund</SelectItem>
+                      <SelectItem value="Oshakati">Oshakati</SelectItem>
+                      <SelectItem value="Rundu">Rundu</SelectItem>
+                      <SelectItem value="Otjiwarongo">Otjiwarongo</SelectItem>
+                      <SelectItem value="Rehoboth">Rehoboth</SelectItem>
+                      <SelectItem value="Keetmanshoop">Keetmanshoop</SelectItem>
+                      <SelectItem value="Tsumeb">Tsumeb</SelectItem>
+                      <SelectItem value="Gobabis">Gobabis</SelectItem>
+                      <SelectItem value="Katima Mulilo">Katima Mulilo</SelectItem>
+                      <SelectItem value="Ondangwa">Ondangwa</SelectItem>
+                      <SelectItem value="Okahandja">Okahandja</SelectItem>
+                      <SelectItem value="Outjo">Outjo</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -583,8 +693,8 @@ const BusinessRegistration = () => {
                     Continue <ChevronRight className="ml-1 h-4 w-4" />
                   </Button>
                 ) : (
-                  <Button type="submit">
-                    Submit Registration
+                  <Button type="submit" disabled={submitting}>
+                    {submitting ? "Submitting..." : "Submit Registration"}
                   </Button>
                 )}
               </div>

@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Afro-Connect Debug</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    h1 {
+      color: #333;
+    }
+    .debug-section {
+      margin-top: 20px;
+      padding: 15px;
+      background-color: #f8f8f8;
+      border-radius: 4px;
+    }
+    pre {
+      background-color: #eee;
+      padding: 10px;
+      border-radius: 4px;
+      overflow-x: auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Afro-Connect Debug Page</h1>
+    <p>This is a simple debug page to help diagnose rendering issues.</p>
+    
+    <div class="debug-section">
+      <h2>Basic React Test</h2>
+      <div id="react-test"></div>
+    </div>
+    
+    <div class="debug-section">
+      <h2>Environment Variables</h2>
+      <div id="env-vars"></div>
+    </div>
+    
+    <div class="debug-section">
+      <h2>Console Output</h2>
+      <pre id="console-output"></pre>
+    </div>
+  </div>
+
+  <script type="module">
+    // Capture console output
+    const originalConsole = {
+      log: console.log,
+      error: console.error,
+      warn: console.warn,
+      info: console.info
+    };
+    
+    const consoleOutput = document.getElementById('console-output');
+    
+    function logToElement(type, ...args) {
+      const message = args.map(arg => 
+        typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+      ).join(' ');
+      
+      consoleOutput.innerHTML += `<strong>${type}:</strong> ${message}\n`;
+      return originalConsole[type](...args);
+    }
+    
+    console.log = (...args) => logToElement('log', ...args);
+    console.error = (...args) => logToElement('error', ...args);
+    console.warn = (...args) => logToElement('warn', ...args);
+    console.info = (...args) => logToElement('info', ...args);
+    
+    // Display environment variables
+    const envVars = document.getElementById('env-vars');
+    try {
+      const envEntries = Object.entries(import.meta.env)
+        .filter(([key]) => key.startsWith('VITE_'))
+        .map(([key, value]) => `<div><strong>${key}:</strong> ${value}</div>`)
+        .join('');
+      
+      envVars.innerHTML = envEntries || '<p>No VITE_ environment variables found</p>';
+    } catch (error) {
+      envVars.innerHTML = `<p style="color: red">Error accessing environment variables: ${error.message}</p>`;
+    }
+    
+    // Basic React test
+    try {
+      const React = await import('react');
+      const ReactDOM = await import('react-dom/client');
+      
+      const TestComponent = () => {
+        return React.createElement('div', null, [
+          React.createElement('p', { key: 1 }, 'If you can see this, React is working correctly!'),
+          React.createElement('button', { 
+            key: 2,
+            onClick: () => alert('React events are working!'),
+            style: { padding: '8px 16px', background: '#4CAF50', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }
+          }, 'Click Me')
+        ]);
+      };
+      
+      const container = document.getElementById('react-test');
+      const root = ReactDOM.createRoot(container);
+      root.render(React.createElement(TestComponent));
+      
+      console.log('React test component rendered successfully');
+    } catch (error) {
+      console.error('Error rendering React test component:', error);
+      document.getElementById('react-test').innerHTML = `<p style="color: red">React Error: ${error.message}</p>`;
+    }
+  </script>
+</body>
+</html>

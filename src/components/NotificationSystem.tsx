@@ -13,7 +13,12 @@ import {
   Heart,
   Settings,
   MoreHorizontal,
-  Loader2
+  Loader2,
+  User,
+  ShoppingCart,
+  CreditCard,
+  FileText,
+  RefreshCw
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -33,6 +38,23 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import useNotifications, { Notification } from "@/hooks/useNotifications";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast as sonnerToast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { Database } from "@/integrations/supabase/types";
+
+type Notification = Database['public']['Tables']['notifications']['Row'];
+
+// Define the structure of notification data to avoid using 'any'
+interface NotificationData {
+  isImportant?: boolean;
+  actionUrl?: string;
+  businessName?: string;
+  businessId?: string;
+  bookingId?: string;
+  userId?: string;
+  [key: string]: unknown;
+}
+
+const POLL_INTERVAL = 30000; // 30 seconds
 
 const NotificationSystem = () => {
   const { user } = useAuth();
@@ -93,7 +115,7 @@ const NotificationSystem = () => {
     if (!notification) return false;
     switch (filter) {
       case "unread": return !notification.is_read;
-      case "important": return notification.data && (notification.data as any).isImportant === true;
+      case "important": return notification.data && (notification.data as NotificationData).isImportant === true;
       default: return true;
     }
   });
@@ -218,8 +240,8 @@ const NotificationSystem = () => {
                 if (!notification) return null;
                 const IconComponent = getNotificationIcon(notification.type);
                 const colorClasses = getNotificationColor(notification.type);
-                const actionUrl = (notification.data as any)?.actionUrl || notification.message;
-                const isClickable = !!(notification.data as any)?.actionUrl;
+                const actionUrl = (notification.data as NotificationData)?.actionUrl || notification.message;
+                const isClickable = !!(notification.data as NotificationData)?.actionUrl;
 
                 return (
                   <div
@@ -245,15 +267,15 @@ const NotificationSystem = () => {
                             </p>
                             
                             <div className="flex items-center gap-2 mt-1.5">
-                              {(notification.data as any)?.businessName && (
+                              {(notification.data as NotificationData)?.businessName && (
                                 <span className="text-xs text-muted-foreground">
-                                  {(notification.data as any).businessName}
+                                  {(notification.data as NotificationData).businessName}
                                 </span>
                               )}
                               <span className="text-xs text-muted-foreground">
                                 {formatTimestamp(notification.created_at)}
                               </span>
-                              {notification.data && (notification.data as any).isImportant === true && (
+                              {notification.data && (notification.data as NotificationData).isImportant === true && (
                                 <Badge variant="outline" className="text-xs border-red-500 text-red-500 py-0 px-1.5">
                                   Important
                                 </Badge>

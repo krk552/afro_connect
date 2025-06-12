@@ -49,9 +49,9 @@ const BookingPage = () => {
   // Pre-fill user data if logged in
   useEffect(() => {
     if (user) {
-      setCustomerName(`${user.first_name || ''} ${user.last_name || ''}`.trim());
+      setCustomerName(`${user.user_metadata?.first_name || ''} ${user.user_metadata?.last_name || ''}`.trim());
       setCustomerEmail(user.email || '');
-      setCustomerPhone(user.phone || '');
+      setCustomerPhone(user.user_metadata?.phone || '');
     }
   }, [user]);
 
@@ -106,15 +106,12 @@ const BookingPage = () => {
       const selectedServiceData = business?.services?.find(s => s.id === selectedService);
       
       const bookingData = {
-        business_id: id!,
-        service_id: selectedService,
-        booking_date: selectedDate,
-        booking_time: selectedTime,
-        customer_name: customerName,
-        customer_phone: customerPhone,
-        customer_email: customerEmail,
+        businessId: id!,
+        serviceId: selectedService,
+        bookingDate: selectedDate,
+        bookingTime: selectedTime,
         notes: notes || undefined,
-        total_amount: selectedServiceData?.price || 0,
+        guestCount: 1,
       };
 
       const result = await createBooking(bookingData);
