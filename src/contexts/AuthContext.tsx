@@ -76,7 +76,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const fetchProfileAndUpdateLogin = async (userId: string) => {
     try {
       // Run both operations in parallel for better performance
-      const [profileData] = await Promise.allSettled([
+      const [profileResult, updateResult] = await Promise.allSettled([
         fetchUserProfile(userId),
         supabase
           .from('users')
@@ -84,10 +84,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           .eq('id', userId)
       ]);
 
-      if (profileData.status === 'fulfilled') {
-        return profileData.value;
+      // Log update result for debugging
+      if (updateResult.status === 'rejected') {
+        console.error('❌ Error updating last_login_at:', updateResult.reason);
       } else {
-        console.error('❌ Error in parallel operations:', profileData.reason);
+        console.log('✅ Last login updated successfully');
+      }
+
+      // Return profile data regardless of update success
+      if (profileResult.status === 'fulfilled') {
+        return profileResult.value;
+      } else {
+        console.error('❌ Error fetching profile:', profileResult.reason);
         return null;
       }
     } catch (error) {
@@ -148,7 +156,38 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (event === 'SIGNED_IN' && session?.user) {
           console.log('👤 User signed in, fetching profile and updating last_login_at...');
           const profileData = await fetchProfileAndUpdateLogin(session.user.id);
-          setProfile(profileData);
+          
+          // If no profile found, try to create one from auth user data
+          if (!profileData && session.user) {
+            console.log('📝 No profile found, creating from auth data...');
+            try {
+              const { error: insertError } = await supabase
+                .from('users')
+                .insert({
+                  id: session.user.id,
+                  email: session.user.email || '',
+                  first_name: session.user.user_metadata?.first_name || '',
+                  last_name: session.user.user_metadata?.last_name || '',
+                  phone: session.user.user_metadata?.phone || null,
+                  role: session.user.user_metadata?.role || 'customer',
+                  email_verified: session.user.email_confirmed_at ? true : false,
+                  created_at: new Date().toISOString(),
+                  updated_at: new Date().toISOString(),
+                });
+              
+              if (!insertError) {
+                // Fetch the newly created profile
+                const newProfile = await fetchUserProfile(session.user.id);
+                setProfile(newProfile);
+              } else {
+                console.error('❌ Error creating profile:', insertError);
+              }
+            } catch (error) {
+              console.error('❌ Error in profile creation fallback:', error);
+            }
+          } else {
+            setProfile(profileData);
+          }
           
           // This block is now handled by fetchProfileAndUpdateLogin
           // try {
@@ -287,11 +326,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         password,
       });
 
-      const result = await Promise.race([loginPromise, timeoutPromise]) as any;
-      return { error: result.error };
+      const { data, error } = await Promise.race([loginPromise, timeoutPromise]) as any;
+      return { error };
     } catch (error) {
       console.error('Error during sign in:', error);
-      return { error };
+      return { error: error instanceof Error ? error : new Error('Login failed') };
     }
   };
 
