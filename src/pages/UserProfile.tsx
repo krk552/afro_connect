@@ -86,14 +86,75 @@ const UserProfile = () => {
     }
   }, [profile, user]);
 
-  // Calculate real user stats
+  // Filter bookings for current user
   const userBookings = bookings?.filter(b => b.customer_id === user?.id) || [];
   const completedBookings = userBookings.filter(b => b.status === 'completed');
+  const upcomingBookings = userBookings.filter(b => b.status === 'pending' || b.status === 'confirmed');
   const userStats = {
     totalBookings: userBookings.length,
     favoriteBusinesses: favorites?.length || 0,
     reviewsWritten: 0, // TODO: Implement when reviews are connected
     membershipLevel: userBookings.length >= 10 ? "Gold" : userBookings.length >= 5 ? "Silver" : "Bronze"
+  };
+
+  // Generate real activity data from user actions
+  const generateActivityFeed = () => {
+    const activities: any[] = [];
+
+    // Add recent bookings as activities
+    userBookings
+      .slice(0, 5) // Get last 5 bookings
+      .forEach(booking => {
+        if (booking.created_at) {
+          activities.push({
+            id: `booking-${booking.id}`,
+            type: 'booking',
+            message: `Booked appointment at ${booking.businesses?.name || 'a business'}`,
+            date: new Date(booking.created_at),
+            dotColor: 'bg-green-500',
+            bgColor: 'bg-green-50'
+          });
+        }
+      });
+
+    // Add recent favorites as activities
+    favorites
+      ?.slice(0, 3) // Get last 3 favorites
+      .forEach(favorite => {
+        if (favorite.created_at) {
+          activities.push({
+            id: `favorite-${favorite.id}`,
+            type: 'favorite',
+            message: `Added ${favorite.businesses?.name || 'a business'} to favorites`,
+            date: new Date(favorite.created_at),
+            dotColor: 'bg-purple-500',
+            bgColor: 'bg-purple-50'
+          });
+        }
+      });
+
+    // Sort by date (newest first) and return top 10
+    return activities
+      .sort((a, b) => b.date.getTime() - a.date.getTime())
+      .slice(0, 10);
+  };
+
+  const recentActivities = generateActivityFeed();
+
+  // Helper function to format relative time
+  const formatTimeAgo = (date: Date) => {
+    const now = new Date();
+    const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
+    
+    if (diffInMinutes < 60) {
+      return `${diffInMinutes} minutes ago`;
+    } else if (diffInMinutes < 1440) { // 24 hours
+      const hours = Math.floor(diffInMinutes / 60);
+      return `${hours} hour${hours !== 1 ? 's' : ''} ago`;
+    } else {
+      const days = Math.floor(diffInMinutes / 1440);
+      return `${days} day${days !== 1 ? 's' : ''} ago`;
+    }
   };
 
   if (authLoading) {
@@ -395,27 +456,25 @@ const UserProfile = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="flex items-center gap-4 p-3 bg-green-50 rounded-lg">
-                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                    <div className="flex-1">
-                      <p className="text-sm font-medium">Booked appointment at Desert Rose Spa</p>
-                      <p className="text-xs text-muted-foreground">2 hours ago</p>
+                  {recentActivities.length > 0 ? (
+                    recentActivities.map((activity) => (
+                      <div key={activity.id} className={`flex items-center gap-4 p-3 rounded-lg ${activity.bgColor}`}>
+                        <div className={`w-2 h-2 ${activity.dotColor} rounded-full`}></div>
+                        <div className="flex-1">
+                          <p className="text-sm font-medium">{activity.message}</p>
+                          <p className="text-xs text-muted-foreground">{formatTimeAgo(activity.date)}</p>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-8">
+                      <TrendingUp className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                      <p className="text-muted-foreground mb-2">No recent activity</p>
+                      <p className="text-sm text-muted-foreground">
+                        Start exploring businesses and making bookings to see your activity here
+                      </p>
                     </div>
-                  </div>
-                  <div className="flex items-center gap-4 p-3 bg-blue-50 rounded-lg">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                    <div className="flex-1">
-                      <p className="text-sm font-medium">Left a 5-star review for Kalahari Auto Care</p>
-                      <p className="text-xs text-muted-foreground">1 day ago</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-4 p-3 bg-purple-50 rounded-lg">
-                    <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                    <div className="flex-1">
-                      <p className="text-sm font-medium">Added Namibia Hair Studio to favorites</p>
-                      <p className="text-xs text-muted-foreground">3 days ago</p>
-                    </div>
-                  </div>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
@@ -432,7 +491,7 @@ const UserProfile = () => {
                         <div className="flex-1">
                           <h3 className="font-semibold text-lg">Upcoming Appointments</h3>
                           <p className="text-sm text-muted-foreground">View and manage your scheduled appointments</p>
-                          <p className="text-2xl font-bold text-blue-600 mt-2">2</p>
+                          <p className="text-2xl font-bold text-blue-600 mt-2">{upcomingBookings.length}</p>
                         </div>
                       </div>
                     </CardContent>
