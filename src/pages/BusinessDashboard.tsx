@@ -60,6 +60,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useBookings, BookingWithDetails } from "@/hooks/useBookings";
 import { useBusinesses, BusinessWithCategory } from "@/hooks/useBusinesses";
 import useServices, { Service as ServiceType, ServiceInsert } from "@/hooks/useServices";
+import { useCategories } from '@/hooks/useCategories';
 
 interface BusinessStats {
   totalBookings: number;
@@ -84,6 +85,7 @@ const BusinessDashboard = () => {
     updateService,
     deleteService
   } = useServices();
+  const { categories: dynamicCategories, loading: categoriesLoading } = useCategories();
 
   const userBusiness = businesses?.find(b => b.owner_id === user?.id);
 
@@ -598,10 +600,12 @@ const BusinessDashboard = () => {
                           <SelectValue placeholder="Select category"/>
                         </SelectTrigger>
                         <SelectContent>
-                          {/* TODO: Populate with actual categories from DB - this requires a useCategories hook */}
-                          <SelectItem value="placeholder-cat-1">Hair & Beauty Salon</SelectItem>
-                          <SelectItem value="placeholder-cat-2">Restaurant</SelectItem>
-                          <SelectItem value="placeholder-cat-3">Auto Services</SelectItem>
+                          {/* Dynamic categories from database */}
+                          {dynamicCategories.map(cat => (
+                            <SelectItem key={cat.id} value={cat.id}>
+                              {cat.name}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                     </div>

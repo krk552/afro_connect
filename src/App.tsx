@@ -1,38 +1,58 @@
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { AuthProvider } from "@/contexts/AuthContext";
+import React, { Suspense } from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Toaster } from '@/components/ui/toaster';
+import { Toaster as Sonner } from '@/components/ui/sonner';
+import { TooltipProvider } from '@/components/ui/tooltip';
+import { BookingFormSkeleton } from '@/components/LoadingStates';
 
-// Page imports
-import Index from "./pages/Index";
-import NotFound from "./pages/NotFound";
-import BusinessDetails from "./pages/BusinessDetails";
-import BusinessListing from "./pages/BusinessListing";
-import Categories from "./pages/Categories";
-import CategoryPage from "./pages/CategoryPage";
-import BookingPage from "./pages/BookingPage";
-import LoginPage from "./pages/LoginPage";
-import SignupPage from "./pages/SignupPage";
-import UserProfile from "./pages/UserProfile";
-import BookingConfirmation from "./pages/BookingConfirmation";
-import BusinessRegistration from "./pages/BusinessRegistration";
-import BusinessDashboard from "./pages/BusinessDashboard";
-import Favorites from "./pages/Favorites";
-import SearchResults from "./pages/SearchResults";
-import AboutPage from "./pages/AboutPage";
-import ContactPage from "./pages/ContactPage";
-import BookingHistory from "./pages/BookingHistory";
-import AuthCallback from "./pages/AuthCallback";
-import OnboardingPage from "./pages/OnboardingPage";
+// Critical imports that should be loaded immediately
+import { AuthProvider } from '@/contexts/AuthContext';
+import AuthCallback from '@/pages/AuthCallback';
+import OnboardingGuard from '@/components/OnboardingGuard';
+import MainLayout from '@/layouts/MainLayout';
 
-// Layout components
-import MainLayout from "./layouts/MainLayout";
-import AuthLayout from "./layouts/AuthLayout";
-import OnboardingGuard from "./components/OnboardingGuard";
+// Lazy load all other pages to reduce initial bundle size
+const Index = React.lazy(() => import('@/pages/Index'));
+const Categories = React.lazy(() => import('@/pages/Categories'));
+const CategoryPage = React.lazy(() => import('@/pages/CategoryPage'));
+const BusinessListing = React.lazy(() => import('@/pages/BusinessListing'));
+const BusinessDetails = React.lazy(() => import('@/pages/BusinessDetails'));
+const BusinessDashboard = React.lazy(() => import('@/pages/BusinessDashboard'));
+const BookingPage = React.lazy(() => import('@/pages/BookingPage'));
+const BookingConfirmation = React.lazy(() => import('@/pages/BookingConfirmation'));
+const UserProfile = React.lazy(() => import('@/pages/UserProfile'));
+const Favorites = React.lazy(() => import('@/pages/Favorites'));
+const BookingHistory = React.lazy(() => import('@/pages/BookingHistory'));
+const SearchResults = React.lazy(() => import('@/pages/SearchResults'));
+const AboutPage = React.lazy(() => import('@/pages/AboutPage'));
+const ContactPage = React.lazy(() => import('@/pages/ContactPage'));
+const OnboardingPage = React.lazy(() => import('@/pages/OnboardingPage'));
+const LoginPage = React.lazy(() => import('@/pages/LoginPage'));
+const SignupPage = React.lazy(() => import('@/pages/SignupPage'));
+const BusinessRegistration = React.lazy(() => import('@/pages/BusinessRegistration'));
+const NotFound = React.lazy(() => import('@/pages/NotFound'));
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      retry: 1,
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      gcTime: 10 * 60 * 1000, // 10 minutes (formerly cacheTime)
+    },
+  },
+});
+
+// Enhanced loading component with better UX
+const PageLoader = () => (
+  <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 to-yellow-50">
+    <div className="text-center space-y-4">
+      <BookingFormSkeleton />
+      <p className="text-sm text-muted-foreground">Loading...</p>
+    </div>
+  </div>
+);
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -41,46 +61,49 @@ const App = () => (
         <TooltipProvider>
           <Toaster />
           <Sonner />
-          <Routes>
-            {/* Auth Callback Route (no layout) */}
-            <Route path="/auth/callback" element={<AuthCallback />} />
-            
-            {/* Onboarding Route (no layout) */}
-            <Route path="/onboarding" element={<OnboardingPage />} />
+          <Suspense fallback={<PageLoader />}>
+            <Routes>
+              {/* Auth Callback Route (no layout) */}
+              <Route path="/auth/callback" element={<AuthCallback />} />
+              
+              {/* Onboarding Route (no layout) */}
+              <Route path="/onboarding" element={<OnboardingPage />} />
 
-            {/* Main Layout Routes */}
-            <Route element={<OnboardingGuard><MainLayout /></OnboardingGuard>}>
-              <Route path="/" element={<Index />} />
-              <Route path="/categories" element={<Categories />} />
-              <Route path="/category/:categorySlug" element={<CategoryPage />} />
-              <Route path="/businesses" element={<BusinessListing />} />
-              <Route path="/business/:id" element={<BusinessDetails />} />
-              <Route path="/business/dashboard" element={<BusinessDashboard />} />
-              <Route path="/book/:id" element={<BookingPage />} />
-              <Route path="/booking/confirmation/:bookingId" element={<BookingConfirmation />} />
-              <Route path="/profile" element={<UserProfile />} />
-              <Route path="/favorites" element={<Favorites />} />
-              <Route path="/bookings" element={<BookingHistory />} />
-              <Route path="/search" element={<SearchResults />} />
-              <Route path="/about" element={<AboutPage />} />
-              <Route path="/contact" element={<ContactPage />} />
-              <Route path="/notifications" element={<div className="pt-16 pb-24"><div className="container mx-auto px-4"><h1 className="text-2xl font-bold">All Notifications</h1><p className="text-muted-foreground mt-2">Comprehensive notification management coming soon...</p></div></div>} />
-              <Route path="/support" element={<div className="pt-16 pb-24"><div className="container mx-auto px-4"><h1 className="text-2xl font-bold">Support Center</h1><p className="text-muted-foreground mt-2">Help and support resources coming soon...</p></div></div>} />
-              <Route path="/messages/:id?" element={<div className="pt-16 pb-24"><div className="container mx-auto px-4"><h1 className="text-2xl font-bold">Messages</h1><p className="text-muted-foreground mt-2">Business messaging system coming soon...</p></div></div>} />
-              <Route path="/review/:bookingId" element={<div className="pt-16 pb-24"><div className="container mx-auto px-4"><h1 className="text-2xl font-bold">Leave a Review</h1><p className="text-muted-foreground mt-2">Review system coming soon...</p></div></div>} />
-              <Route path="/payment/receipt/:bookingId" element={<div className="pt-16 pb-24"><div className="container mx-auto px-4"><h1 className="text-2xl font-bold">Payment Receipt</h1><p className="text-muted-foreground mt-2">Receipt details coming soon...</p></div></div>} />
-            </Route>
-
-            {/* Auth Layout Routes */}
-            <Route element={<AuthLayout />}>
+              {/* Auth Routes (no main layout) */}
               <Route path="/login" element={<LoginPage />} />
               <Route path="/signup" element={<SignupPage />} />
               <Route path="/business/register" element={<BusinessRegistration />} />
-            </Route>
 
-            {/* 404 Catch-All */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+              {/* Main Layout Routes */}
+              <Route element={<OnboardingGuard><MainLayout /></OnboardingGuard>}>
+                <Route path="/" element={<Index />} />
+                <Route path="/categories" element={<Categories />} />
+                <Route path="/category/:categorySlug" element={<CategoryPage />} />
+                <Route path="/businesses" element={<BusinessListing />} />
+                <Route path="/business/:id" element={<BusinessDetails />} />
+                <Route path="/business/dashboard" element={<BusinessDashboard />} />
+                <Route path="/book/:id" element={<BookingPage />} />
+                <Route path="/booking/confirmation/:bookingId" element={<BookingConfirmation />} />
+                <Route path="/profile" element={<UserProfile />} />
+                <Route path="/favorites" element={<Favorites />} />
+                <Route path="/bookings" element={<BookingHistory />} />
+                <Route path="/search" element={<SearchResults />} />
+                <Route path="/about" element={<AboutPage />} />
+                <Route path="/contact" element={<ContactPage />} />
+                <Route path="/notifications" element={
+                  <div className="pt-16 pb-24">
+                    <div className="container mx-auto px-4">
+                      <h1 className="text-2xl font-bold">All Notifications</h1>
+                      <p className="text-muted-foreground mt-2">Comprehensive notification management coming soon...</p>
+                    </div>
+                  </div>
+                } />
+              </Route>
+
+              {/* 404 Route */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Suspense>
         </TooltipProvider>
       </AuthProvider>
     </BrowserRouter>

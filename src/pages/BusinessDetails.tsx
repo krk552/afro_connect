@@ -1,439 +1,432 @@
-import { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
 import { 
-  MapPin, Phone, Clock, Globe, Star, Heart, Share, Calendar, 
-  ChevronDown, ChevronUp, MapIcon, MessageSquare, Check, Loader2
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { toast } from "@/hooks/use-toast";
-import { useBusiness } from "@/hooks/useBusinesses";
-import { useFavorites } from "@/hooks/useFavorites";
-import { useReviews } from "@/hooks/useReviews";
-import { useAuth } from "@/contexts/AuthContext";
-
-// Define TypeScript interfaces for our data structure
-interface Review {
-  id: number;
-  author: string;
-  rating: number;
-  date: string;
-  comment: string;
-}
-
-interface Service {
-  name: string;
-  price: string;
-  duration: string;
-}
-
-interface Business {
-  id: string;
-  name: string;
-  category: string;
-  rating: number;
-  reviews: number;
-  image: string;
-  location: string;
-  phone: string;
-  website: string;
-  hours: string;
-  description: string;
-  amenities: string[];
-  services: Service[];
-  gallery: string[];
-  reviewList: Review[]; // Renamed to avoid confusion
-}
+  MapPin, 
+  Phone, 
+  Mail, 
+  Globe, 
+  Clock, 
+  Star, 
+  Heart,
+  Calendar,
+  ArrowLeft,
+  CheckCircle,
+  AlertCircle
+} from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { useBusiness } from '@/hooks/useBusinesses';
+import { useFavorites } from '@/hooks/useFavorites';
+import { toast } from 'sonner';
 
 const BusinessDetails = () => {
-  const { id } = useParams();
+  const { businessId } = useParams<{ businessId: string }>();
+  const navigate = useNavigate();
   const { user } = useAuth();
-  const [showFullDescription, setShowFullDescription] = useState(false);
-  
-  // Use our backend hooks
-  const { business, loading: businessLoading, error: businessError } = useBusiness(id || '');
-  const { isFavorite, toggleFavorite, loading: favoritesLoading } = useFavorites();
-  const { reviews, loading: reviewsLoading } = useReviews(id || '');
+  const { business, loading, error } = useBusiness(businessId || '');
+  const { isFavorite, toggleFavorite } = useFavorites();
 
-  const handleToggleFavorite = async () => {
+  const [selectedTab, setSelectedTab] = useState<'overview' | 'services' | 'hours'>('overview');
+
+  if (loading) {
+    return (
+      <div className="pt-16 pb-24">
+        <div className="container mx-auto px-4">
+          <div className="text-center py-12">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-afro-orange mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading business details...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !business) {
+    return (
+      <div className="pt-16 pb-24">
+        <div className="container mx-auto px-4">
+          <div className="text-center py-12">
+            <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Business Not Found</h2>
+            <p className="text-gray-600 mb-6">
+              {error || "The business you're looking for doesn't exist or has been removed."}
+            </p>
+            <Button onClick={() => navigate('/')}>
+              Go Home
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const handleBookNow = () => {
     if (!user) {
-      toast({
-        title: "Login required",
-        description: "Please log in to add businesses to your favorites",
-        variant: "destructive",
-      });
+      toast.error('Please sign in to book appointments');
+      navigate('/login');
       return;
     }
-
-    if (!business) return;
-
-    const result = await toggleFavorite(business.id);
-    if (result.error) {
-      toast({
-        title: "Error",
-        description: result.error.message,
-        variant: "destructive",
-      });
-    } else {
-      toast({
-        title: isFavorite(business.id) ? "Added to favorites" : "Removed from favorites",
-        description: isFavorite(business.id) 
-          ? "This business has been added to your favorites" 
-          : "This business has been removed from your favorites",
-      });
-    }
+    navigate(`/booking/${businessId}`);
   };
 
-  const handleShare = () => {
-    if (navigator.share) {
-      navigator.share({
-        title: business?.name || 'Business',
-        text: `Check out ${business?.name || 'this business'} on AfroBiz Connect!`,
-        url: window.location.href,
-      }).catch((error) => console.log('Error sharing', error));
-    } else {
-      toast({
-        title: "Link copied",
-        description: "Business link copied to clipboard",
-      });
-      navigator.clipboard.writeText(window.location.href);
+  const handleFavorite = () => {
+    if (!user) {
+      toast.error('Please sign in to save favorites');
+      navigate('/login');
+      return;
     }
+    toggleFavorite(business.id);
   };
 
-  // Loading state
-  if (businessLoading) {
-    return (
-      <div className="pt-16 pb-24 flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
-          <p className="text-muted-foreground">Loading business details...</p>
-        </div>
-      </div>
-    );
-  }
+  const formatTime = (time: string) => {
+    if (!time) return 'Closed';
+    return new Date(`2000-01-01T${time}`).toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
+    });
+  };
 
-  // Error state
-  if (businessError || !business) {
-    return (
-      <div className="pt-16 pb-24 flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold mb-2">Business not found</h2>
-          <p className="text-muted-foreground mb-4">
-            {businessError || "The business you're looking for doesn't exist."}
-          </p>
-          <Button asChild>
-            <Link to="/businesses">Browse Businesses</Link>
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
-  // Format business hours
-  const formatBusinessHours = () => {
-    if (!business.business_hours || business.business_hours.length === 0) {
-      return "Hours not available";
-    }
-    
-    // Group by day and format
-    const today = new Date().getDay(); // 0 = Sunday, 1 = Monday, etc.
-    const todayHours = business.business_hours.find(h => h.day_of_week === today);
-    
-    if (todayHours) {
-      if (todayHours.is_closed) {
-        return "Closed today";
-      }
-      return `Today: ${todayHours.open_time} - ${todayHours.close_time}`;
-    }
-    
-    return "Hours available in details";
+  const getDayName = (dayOfWeek: number) => {
+    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    return days[dayOfWeek];
   };
 
   return (
     <div className="pt-16 pb-24">
-      {/* Hero image */}
-      <div className="relative h-60 md:h-80">
-        <img
-          src={business.cover_image_url || business.logo_url || "https://images.unsplash.com/photo-1560066984-138dadb4c035"}
-          alt={business.name}
-          className="w-full h-full object-cover"
-        />
-        <div className="absolute bottom-0 left-0 w-full bg-gradient-to-t from-black/70 to-transparent p-4">
-          <span className="inline-block bg-primary text-white text-xs font-medium px-2 py-1 rounded-full">
-            {business.categories?.name || 'Business'}
-          </span>
+      <div className="container mx-auto px-4 max-w-6xl">
+        {/* Header */}
+        <div className="mb-8">
+          <Button 
+            variant="ghost" 
+            onClick={() => navigate(-1)}
+            className="mb-4"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back
+          </Button>
         </div>
-      </div>
 
-      {/* Business info */}
-      <div className="container mx-auto px-4 -mt-6 relative">
-        <Card className="p-6 mb-6 rounded-xl shadow-lg">
-          <div className="flex justify-between items-start">
-            <div>
-              <h1 className="text-2xl font-bold">{business.name}</h1>
-              <div className="flex items-center mt-2">
-                <div className="flex items-center">
-                  <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
-                  <span className="ml-1 font-medium">{business.average_rating?.toFixed(1) || 'N/A'}</span>
-                  <span className="ml-1 text-muted-foreground">({business.review_count || 0} reviews)</span>
-                </div>
-                {business.is_verified && (
-                  <span className="ml-3 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                    <Check className="h-3 w-3 mr-1" />
-                    Verified
-                  </span>
-                )}
-              </div>
-            </div>
-            <div className="flex space-x-2">
-              <Button
-                variant="outline"
-                size="icon"
-                className={isFavorite(business.id) ? "text-red-500" : ""}
-                onClick={handleToggleFavorite}
-                disabled={favoritesLoading}
-              >
-                <Heart className={`h-5 w-5 ${isFavorite(business.id) ? "fill-red-500" : ""}`} />
-              </Button>
-              <Button variant="outline" size="icon" onClick={handleShare}>
-                <Share className="h-5 w-5" />
-              </Button>
-            </div>
-          </div>
-
-          <div className="mt-4 space-y-2 text-sm">
-            <div className="flex items-start">
-              <MapPin className="h-4 w-4 mt-0.5 text-muted-foreground mr-2 flex-shrink-0" />
-              <span>{[business.street_address, business.city, business.region, business.country].filter(Boolean).join(', ')}</span>
-            </div>
-            {business.phone && (
-              <div className="flex items-start">
-                <Phone className="h-4 w-4 mt-0.5 text-muted-foreground mr-2 flex-shrink-0" />
-                <span>{business.phone}</span>
-              </div>
-            )}
-            {business.website && (
-              <div className="flex items-start">
-                <Globe className="h-4 w-4 mt-0.5 text-muted-foreground mr-2 flex-shrink-0" />
-                <a href={business.website.startsWith('http') ? business.website : `https://${business.website}`} 
-                   target="_blank" 
-                   rel="noopener noreferrer" 
-                   className="text-primary">
-                  {business.website}
-                </a>
-              </div>
-            )}
-            <div className="flex items-start">
-              <Clock className="h-4 w-4 mt-0.5 text-muted-foreground mr-2 flex-shrink-0" />
-              <span>{formatBusinessHours()}</span>
-            </div>
-          </div>
-
-          <div className="mt-6">
-            <Button asChild size="lg" className="w-full">
-              <Link to={`/book/${business.id}`}>
-                <Calendar className="mr-2 h-4 w-4" />
-                Book Appointment
-              </Link>
-            </Button>
-          </div>
-        </Card>
-
-        <Tabs defaultValue="about" className="mb-16">
-          <TabsList className="grid grid-cols-3">
-            <TabsTrigger value="about">About</TabsTrigger>
-            <TabsTrigger value="services">Services</TabsTrigger>
-            <TabsTrigger value="reviews">Reviews</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="about" className="mt-4">
-            <Card className="p-4">
-              <div>
-                <h3 className="font-medium mb-2">Description</h3>
-                <p className="text-muted-foreground text-sm">
-                  {business.description ? (
-                    showFullDescription 
-                      ? business.description 
-                      : business.description.slice(0, 150) + (business.description.length > 150 ? "..." : "")
-                  ) : (
-                    "No description available."
-                  )}
-                </p>
-                {business.description && business.description.length > 150 && (
-                  <Button
-                    variant="link"
-                    size="sm"
-                    className="p-0 mt-1"
-                    onClick={() => setShowFullDescription(!showFullDescription)}
-                  >
-                    {showFullDescription ? (
-                      <>Show less <ChevronUp className="h-4 w-4 ml-1" /></>
-                    ) : (
-                      <>Read more <ChevronDown className="h-4 w-4 ml-1" /></>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Main Content */}
+          <div className="lg:col-span-2">
+            {/* Business Header */}
+            <Card className="mb-6">
+              <CardContent className="p-6">
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-2">
+                      <h1 className="text-3xl font-bold text-gray-900">{business.name}</h1>
+                      {business.is_verified && (
+                        <Badge className="bg-green-100 text-green-800">
+                          <CheckCircle className="w-3 h-3 mr-1" />
+                          Verified
+                        </Badge>
+                      )}
+                    </div>
+                    
+                    {business.categories && (
+                      <Badge variant="outline" className="mb-3">
+                        {business.categories.name}
+                      </Badge>
                     )}
-                  </Button>
-                )}
-              </div>
 
-              <div className="mt-6">
-                <h3 className="font-medium mb-2">Location</h3>
-                <div className="rounded-md overflow-hidden h-48 bg-muted flex items-center justify-center">
-                  <MapIcon className="h-8 w-8 text-muted-foreground" />
-                  <span className="ml-2 text-muted-foreground">Map View</span>
-                </div>
-                <div className="mt-2 flex justify-between">
-                  <Button variant="outline" size="sm">
-                    <MapPin className="h-4 w-4 mr-1" /> Get Directions
-                  </Button>
-                  {business.phone && (
-                    <Button variant="outline" size="sm" asChild>
-                      <a href={`tel:${business.phone}`}>
-                        <Phone className="h-4 w-4 mr-1" /> Call
-                      </a>
-                    </Button>
-                  )}
-                </div>
-              </div>
-
-              {/* Business Hours Details */}
-              {business.business_hours && business.business_hours.length > 0 && (
-                <div className="mt-6">
-                  <h3 className="font-medium mb-2">Business Hours</h3>
-                  <div className="space-y-1">
-                    {['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].map((day, index) => {
-                      const dayHours = business.business_hours?.find(h => h.day_of_week === index);
-                      return (
-                        <div key={day} className="flex justify-between text-sm">
-                          <span className={index === new Date().getDay() ? 'font-medium' : ''}>{day}</span>
-                          <span className={index === new Date().getDay() ? 'font-medium' : ''}>
-                            {dayHours ? (
-                              dayHours.is_closed ? 'Closed' : `${dayHours.open_time} - ${dayHours.close_time}`
-                            ) : 'Closed'}
-                          </span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-            </Card>
-          </TabsContent>
-          
-          <TabsContent value="services" className="mt-4">
-            <Card>
-              {business.services && business.services.length > 0 ? (
-                <div className="divide-y">
-                  {business.services.map((service) => (
-                    <div key={service.id} className="p-4 flex justify-between items-center">
-                      <div>
-                        <h4 className="font-medium">{service.name}</h4>
-                        <div className="flex text-sm text-muted-foreground mt-1">
-                          <span>{service.duration_minutes} minutes</span>
-                          {service.description && (
-                            <>
-                              <span className="mx-2">•</span>
-                              <span>{service.description}</span>
-                            </>
+                    <div className="flex items-center gap-4 text-sm text-gray-600 mb-4">
+                      <div className="flex items-center gap-1">
+                        <MapPin className="w-4 h-4" />
+                        <span>{business.city}, {business.region}</span>
+                      </div>
+                      {business.average_rating && (
+                        <div className="flex items-center gap-1">
+                          <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
+                          <span>{business.average_rating.toFixed(1)}</span>
+                          {business.review_count && (
+                            <span>({business.review_count} reviews)</span>
                           )}
                         </div>
-                      </div>
-                      <div className="text-right">
-                        <div className="font-medium">
-                          {business.currency} {service.price}
-                        </div>
-                        <Button size="sm" className="mt-1" asChild>
-                          <Link to={`/book/${business.id}?service=${service.id}`}>
-                            Book
-                          </Link>
-                        </Button>
-                      </div>
+                      )}
                     </div>
-                  ))}
+
+                    {business.description && (
+                      <p className="text-gray-700 leading-relaxed">
+                        {business.description}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="flex flex-col gap-2 ml-4">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={handleFavorite}
+                      className={isFavorite(business.id) ? 'text-red-600 border-red-200' : ''}
+                    >
+                      <Heart className={`w-4 h-4 mr-2 ${isFavorite(business.id) ? 'fill-red-600' : ''}`} />
+                      {isFavorite(business.id) ? 'Saved' : 'Save'}
+                    </Button>
+                  </div>
                 </div>
-              ) : (
-                <div className="p-8 text-center text-muted-foreground">
-                  <MessageSquare className="h-8 w-8 mx-auto mb-2" />
-                  <p>No services listed yet.</p>
-                </div>
-              )}
-            </Card>
-          </TabsContent>
-          
-          <TabsContent value="reviews" className="mt-4">
-            <Card>
-              <div className="p-4 border-b">
-                <div className="flex items-center justify-between">
-                  <h3 className="font-medium">Customer Reviews</h3>
-                  {user && (
-                    <Button variant="outline" size="sm">
-                      <MessageSquare className="h-4 w-4 mr-1" /> Write a Review
+
+                {/* Action Buttons */}
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <Button 
+                    className="bg-afro-orange hover:bg-afro-orange/90 flex-1"
+                    onClick={handleBookNow}
+                  >
+                    <Calendar className="w-4 h-4 mr-2" />
+                    Book Appointment
+                  </Button>
+                  {business.phone && (
+                    <Button variant="outline" className="flex-1">
+                      <Phone className="w-4 h-4 mr-2" />
+                      Call Now
                     </Button>
                   )}
                 </div>
-                <div className="flex items-center mt-2">
-                  <Star className="h-5 w-5 text-yellow-400 fill-yellow-400" />
-                  <span className="ml-1 font-medium text-lg">{business.average_rating?.toFixed(1) || 'N/A'}</span>
-                  <span className="ml-1 text-muted-foreground">({business.review_count || 0} reviews)</span>
+              </CardContent>
+            </Card>
+
+            {/* Tabs */}
+            <Card>
+              <CardHeader>
+                <div className="flex gap-4 border-b">
+                  <button
+                    className={`pb-2 px-1 font-medium transition-colors ${
+                      selectedTab === 'overview'
+                        ? 'text-afro-orange border-b-2 border-afro-orange'
+                        : 'text-gray-500 hover:text-gray-700'
+                    }`}
+                    onClick={() => setSelectedTab('overview')}
+                  >
+                    Overview
+                  </button>
+                  <button
+                    className={`pb-2 px-1 font-medium transition-colors ${
+                      selectedTab === 'services'
+                        ? 'text-afro-orange border-b-2 border-afro-orange'
+                        : 'text-gray-500 hover:text-gray-700'
+                    }`}
+                    onClick={() => setSelectedTab('services')}
+                  >
+                    Services
+                  </button>
+                  <button
+                    className={`pb-2 px-1 font-medium transition-colors ${
+                      selectedTab === 'hours'
+                        ? 'text-afro-orange border-b-2 border-afro-orange'
+                        : 'text-gray-500 hover:text-gray-700'
+                    }`}
+                    onClick={() => setSelectedTab('hours')}
+                  >
+                    Hours
+                  </button>
                 </div>
-              </div>
-              
-              {reviewsLoading ? (
-                <div className="p-8 text-center">
-                  <Loader2 className="h-6 w-6 animate-spin mx-auto mb-2" />
-                  <p className="text-muted-foreground">Loading reviews...</p>
-                </div>
-              ) : reviews && reviews.length > 0 ? (
-                <>
-                  <div className="divide-y">
-                    {reviews.map((review) => (
-                      <div key={review.id} className="p-4">
-                        <div className="flex justify-between items-start">
-                          <h4 className="font-medium">
-                            {review.users ? 
-                              `${review.users.first_name || ''} ${review.users.last_name || ''}`.trim() || review.users.email || 'Anonymous'
-                              : 'Anonymous'
-                            }
-                          </h4>
-                          <span className="text-sm text-muted-foreground">
-                            {new Date(review.created_at).toLocaleDateString()}
-                          </span>
-                        </div>
-                        <div className="flex items-center mt-1">
-                          {Array.from({ length: 5 }).map((_, i) => (
-                            <Star 
-                              key={i} 
-                              className={`h-4 w-4 ${
-                                i < review.rating 
-                                  ? "text-yellow-400 fill-yellow-400" 
-                                  : "text-gray-300"
-                              }`} 
-                            />
-                          ))}
-                        </div>
-                        {review.title && (
-                          <h5 className="font-medium mt-2">{review.title}</h5>
+              </CardHeader>
+              <CardContent className="p-6">
+                {selectedTab === 'overview' && (
+                  <div className="space-y-6">
+                    {/* Contact Information */}
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900 mb-4">Contact Information</h3>
+                      <div className="space-y-3">
+                        {business.street_address && (
+                          <div className="flex items-center gap-3">
+                            <MapPin className="w-5 h-5 text-gray-400" />
+                            <span className="text-gray-700">
+                              {business.street_address}, {business.city}, {business.region}
+                            </span>
+                          </div>
                         )}
-                        {review.content && (
-                          <p className="text-sm mt-2">{review.content}</p>
+                        {business.phone && (
+                          <div className="flex items-center gap-3">
+                            <Phone className="w-5 h-5 text-gray-400" />
+                            <span className="text-gray-700">{business.phone}</span>
+                          </div>
+                        )}
+                        {business.email && (
+                          <div className="flex items-center gap-3">
+                            <Mail className="w-5 h-5 text-gray-400" />
+                            <span className="text-gray-700">{business.email}</span>
+                          </div>
+                        )}
+                        {business.website && (
+                          <div className="flex items-center gap-3">
+                            <Globe className="w-5 h-5 text-gray-400" />
+                            <a 
+                              href={business.website} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="text-blue-600 hover:underline"
+                            >
+                              Visit Website
+                            </a>
+                          </div>
                         )}
                       </div>
-                    ))}
+                    </div>
+
+                    {/* Business Hours Preview */}
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900 mb-4">Business Hours</h3>
+                      <div className="space-y-2">
+                                                 {(business as any)?.business_hours?.slice(0, 3).map((hour: any) => (
+                          <div key={hour.day_of_week} className="flex justify-between text-sm">
+                            <span className="text-gray-600">{getDayName(hour.day_of_week)}</span>
+                            <span className="text-gray-900">
+                              {hour.is_closed ? 'Closed' : `${formatTime(hour.open_time)} - ${formatTime(hour.close_time)}`}
+                            </span>
+                          </div>
+                        ))}
+                        <button
+                          onClick={() => setSelectedTab('hours')}
+                          className="text-afro-orange hover:underline text-sm"
+                        >
+                          View all hours →
+                        </button>
+                      </div>
+                    </div>
                   </div>
-                  
-                  <div className="p-4 text-center">
-                    <Button variant="outline">Load More Reviews</Button>
+                )}
+
+                {selectedTab === 'services' && (
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Services</h3>
+                                         {(business as any)?.services && (business as any).services.length > 0 ? (
+                       <div className="space-y-4">
+                         {(business as any).services.map((service: any) => (
+                          <div key={service.id} className="border rounded-lg p-4">
+                            <div className="flex items-center justify-between mb-2">
+                              <h4 className="font-medium text-gray-900">{service.name}</h4>
+                              <span className="font-semibold text-gray-900">
+                                N$ {service.price}
+                              </span>
+                            </div>
+                            {service.description && (
+                              <p className="text-sm text-gray-600 mb-2">{service.description}</p>
+                            )}
+                            <div className="flex items-center justify-between text-sm text-gray-500">
+                              <span>{service.duration_minutes} minutes</span>
+                              <Button 
+                                size="sm"
+                                onClick={() => navigate(`/booking/${businessId}?service=${service.id}`)}
+                              >
+                                Book Now
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-8">
+                        <p className="text-gray-500">No services available yet.</p>
+                      </div>
+                    )}
                   </div>
-                </>
-              ) : (
-                <div className="p-8 text-center text-muted-foreground">
-                  <MessageSquare className="h-8 w-8 mx-auto mb-2" />
-                  <p>No reviews yet. Be the first to review this business!</p>
-                </div>
-              )}
+                )}
+
+                {selectedTab === 'hours' && (
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Business Hours</h3>
+                    <div className="space-y-3">
+                                             {(business as any)?.business_hours?.map((hour: any) => (
+                        <div key={hour.day_of_week} className="flex justify-between items-center py-2">
+                          <span className="font-medium text-gray-900">{getDayName(hour.day_of_week)}</span>
+                          <span className="text-gray-700">
+                            {hour.is_closed ? 'Closed' : `${formatTime(hour.open_time)} - ${formatTime(hour.close_time)}`}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </CardContent>
             </Card>
-          </TabsContent>
-        </Tabs>
+          </div>
+
+          {/* Sidebar */}
+          <div className="space-y-6">
+            {/* Quick Actions */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Quick Actions</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <Button 
+                  className="w-full bg-afro-orange hover:bg-afro-orange/90"
+                  onClick={handleBookNow}
+                >
+                  <Calendar className="w-4 h-4 mr-2" />
+                  Book Appointment
+                </Button>
+                {business.phone && (
+                  <Button variant="outline" className="w-full">
+                    <Phone className="w-4 h-4 mr-2" />
+                    Call Business
+                  </Button>
+                )}
+                <Button 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={handleFavorite}
+                >
+                  <Heart className={`w-4 h-4 mr-2 ${isFavorite(business.id) ? 'fill-red-600' : ''}`} />
+                  {isFavorite(business.id) ? 'Remove from Favorites' : 'Add to Favorites'}
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Business Info */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Business Information</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <div className="text-sm text-gray-500">Status</div>
+                  <Badge variant={business.status === 'active' ? 'default' : 'secondary'}>
+                    {business.status === 'active' ? 'Open' : 'Closed'}
+                  </Badge>
+                </div>
+                
+                {business.price_range && (
+                  <div>
+                    <div className="text-sm text-gray-500">Price Range</div>
+                    <div className="text-sm font-medium capitalize">{business.price_range}</div>
+                  </div>
+                )}
+
+                {business.created_at && (
+                  <div>
+                    <div className="text-sm text-gray-500">Member Since</div>
+                    <div className="text-sm font-medium">
+                      {new Date(business.created_at).toLocaleDateString()}
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Important Notes */}
+            <Card className="border-blue-200 bg-blue-50">
+              <CardContent className="p-4">
+                <div className="flex items-start gap-2">
+                  <AlertCircle className="w-4 h-4 text-blue-600 mt-0.5" />
+                  <div className="text-sm text-blue-800">
+                    <p className="font-medium mb-1">Booking Information:</p>
+                    <ul className="space-y-1 text-xs">
+                      <li>• Bookings are subject to availability</li>
+                      <li>• 24-hour cancellation notice required</li>
+                      <li>• Contact business for special requests</li>
+                    </ul>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       </div>
     </div>
   );

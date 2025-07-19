@@ -12,7 +12,11 @@ import {
   SlidersHorizontal,
   ArrowUpDown,
   Loader2,
-  Heart
+  Heart,
+  Store,
+  Users,
+  Plus,
+  Rocket
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -38,6 +42,7 @@ import { useFavorites } from "@/hooks/useFavorites";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
 import { Database } from "@/integrations/supabase/types";
+import { useNavigate } from "react-router-dom";
 
 type BusinessWithCategory = Database['public']['Tables']['businesses']['Row'] & {
   categories: Database['public']['Tables']['categories']['Row'] | null;
@@ -50,6 +55,7 @@ const SearchResults = () => {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [sortBy, setSortBy] = useState("relevance");
   const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
+  const navigate = useNavigate();
   
   const { user } = useAuth();
   const { isFavorite, toggleFavorite } = useFavorites();
@@ -60,7 +66,7 @@ const SearchResults = () => {
   const priceRangeFilter = searchParams.get("priceRange") || undefined;
   const ratingFilter = searchParams.get("rating") ? parseFloat(searchParams.get("rating")!) : undefined;
 
-  // Use backend hook with filters
+  // Use backend hook with filters - but in a new platform, there are no businesses yet
   const { businesses, loading, error } = useBusinesses({
     search: searchQuery || undefined,
     category: categoryFilter,
@@ -82,230 +88,170 @@ const SearchResults = () => {
     setSearchParams(newParams);
   };
 
-  const handleToggleFavorite = async (businessId: string, businessName: string) => {
-    if (!user) {
-      toast({
-        title: "Login required",
-        description: "Please log in to add businesses to your favorites",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const result = await toggleFavorite(businessId);
-    if (result.error) {
-      toast({
-        title: "Error",
-        description: result.error.message,
-        variant: "destructive",
-      });
-    } else {
-      toast({
-        title: isFavorite(businessId) ? "Added to favorites" : "Removed from favorites",
-        description: isFavorite(businessId) 
-          ? `${businessName} has been added to your favorites` 
-          : `${businessName} has been removed from your favorites`,
-      });
-    }
-  };
-
-  const getPriceRangeDisplay = (priceRange: string | null) => {
-    switch (priceRange) {
-      case 'budget': return '$';
-      case 'moderate': return '$$';
-      case 'expensive': return '$$$';
-      case 'luxury': return '$$$$';
-      default: return '$$';
-    }
-  };
-
-  const BusinessCard = ({ business }: { business: BusinessWithCategory }) => (
-    <Card className="overflow-hidden hover:shadow-lg transition-shadow">
-      <div className="relative">
-        <img
-          src={business.cover_image_url || business.logo_url || "https://images.unsplash.com/photo-1560066984-138dadb4c035"}
-          alt={business.name}
-          className="w-full h-48 object-cover"
-        />
-        <div className="absolute top-2 left-2">
-          <Badge variant="secondary" className="bg-white/90">
-            {business.categories?.name || 'Business'}
-          </Badge>
-        </div>
-        <div className="absolute top-2 right-2">
-          <Button 
-            size="icon" 
-            variant="ghost" 
-            className="bg-white/90 hover:bg-white h-8 w-8"
-            onClick={() => handleToggleFavorite(business.id, business.name)}
-          >
-            <Heart className={`h-4 w-4 ${isFavorite(business.id) ? 'fill-red-500 text-red-500' : ''}`} />
-          </Button>
-        </div>
-        <div className="absolute bottom-2 left-2">
-          <div className="flex items-center gap-1 bg-white/90 rounded-full px-2 py-1">
-            <Clock className="h-3 w-3 text-green-600" />
-            <span className="text-xs font-medium text-green-600">Open</span>
-          </div>
-        </div>
-      </div>
-      
-      <CardContent className="p-4">
-        <div className="flex items-start justify-between mb-2">
-          <h3 className="font-semibold text-lg">{business.name}</h3>
-          <span className="text-sm text-muted-foreground font-medium">
-            {getPriceRangeDisplay(business.price_range)}
-          </span>
-        </div>
-        
-        <div className="flex items-center gap-2 mb-2">
-          <div className="flex items-center gap-1">
-            <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
-            <span className="font-medium text-sm">{business.average_rating?.toFixed(1) || 'N/A'}</span>
-            <span className="text-muted-foreground text-sm">({business.review_count || 0})</span>
-          </div>
-          {business.is_verified && (
-            <Badge variant="outline" className="text-xs">Verified</Badge>
-          )}
-        </div>
-        
-        <div className="flex items-center text-muted-foreground text-sm mb-3">
-          <MapPin className="h-4 w-4 mr-1" />
-          {business.city}, {business.region}
-        </div>
-        
-        {business.description && (
-          <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
-            {business.description}
-          </p>
-        )}
-        
-        <Button asChild className="w-full">
-          <Link to={`/business/${business.id}`}>
-            View Details
-          </Link>
-        </Button>
-      </CardContent>
-    </Card>
-  );
+  // Since we're a new platform, we'll always show the empty state
+  const isEmpty = !businesses || businesses.length === 0;
 
   return (
-    <div className="pt-20 pb-28">
+    <div className="pt-16 pb-24">
       <div className="container mx-auto px-4">
-        {/* Search Header */}
-        <div className="my-8">
-          <h1 className="text-3xl font-bold mb-3">
-            {searchQuery ? `Search Results for "${searchQuery}"` : 'All Businesses'}
-          </h1>
-          <div className="flex flex-col md:flex-row gap-3">
-            <div className="relative flex-1">
-              <Input
-                type="text"
-                placeholder="Search for businesses, services..."
-                className="pr-10 h-11"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleSearch(searchQuery)}
-              />
-              <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        {/* Header */}
+        <div className="mb-8">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">
+                {searchQuery ? `Search results for "${searchQuery}"` : "Search Businesses"}
+              </h1>
+              <p className="text-gray-600 mt-1">
+                Discover local businesses in Namibia
+              </p>
             </div>
-            <Button 
-              className="h-11 px-6"
-              onClick={() => handleSearch(searchQuery)}
-            >
-              Search
-            </Button>
-          </div>
-        </div>
-
-        {/* Filters and Controls */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-          <div className="flex items-center gap-4">
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button variant="outline" size="sm">
-                  <SlidersHorizontal className="h-4 w-4 mr-2" />
-                  Filters
-                </Button>
-              </SheetTrigger>
-              <SheetContent>
-                <SheetHeader>
-                  <SheetTitle>Advanced Filters</SheetTitle>
-                </SheetHeader>
-                <div className="mt-4">
-                  <p className="text-muted-foreground">Advanced filters coming soon...</p>
-                </div>
-              </SheetContent>
-            </Sheet>
             
-            <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger className="w-40">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="relevance">Relevance</SelectItem>
-                <SelectItem value="rating">Rating</SelectItem>
-                <SelectItem value="name">Name</SelectItem>
-                <SelectItem value="newest">Newest</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">
-              {loading ? 'Loading...' : `${businesses?.length || 0} results`}
-            </span>
-            <div className="flex border rounded-md">
-              <Button
-                variant={viewMode === "grid" ? "default" : "ghost"}
-                size="sm"
-                onClick={() => setViewMode("grid")}
-                className="rounded-r-none"
-              >
-                <Grid className="h-4 w-4" />
-              </Button>
-              <Button
-                variant={viewMode === "list" ? "default" : "ghost"}
-                size="sm"
-                onClick={() => setViewMode("list")}
-                className="rounded-l-none"
-              >
-                <List className="h-4 w-4" />
-              </Button>
-            </div>
+            <Badge className="bg-afro-orange/10 text-afro-orange border-afro-orange/20 w-fit">
+              <Rocket className="w-3 h-3 mr-1" />
+              Platform Launching
+            </Badge>
           </div>
         </div>
 
-        {/* Results */}
+        {/* Search Bar */}
+        <div className="mb-8">
+          <div className="relative max-w-2xl">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+            <Input
+              type="text"
+              placeholder="Search for businesses, services..."
+              className="pl-10 pr-4 py-3"
+              value={searchQuery}
+              onChange={(e) => handleSearch(e.target.value)}
+            />
+          </div>
+        </div>
+
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {Array.from({ length: 6 }).map((_, i) => (
+            {[...Array(6)].map((_, i) => (
               <BusinessCardSkeleton key={i} />
             ))}
           </div>
-        ) : error ? (
-          <div className="text-center py-12">
-            <p className="text-muted-foreground">Error loading businesses. Please try again later.</p>
-          </div>
-        ) : businesses && businesses.length > 0 ? (
-          <div className={viewMode === "grid" 
-            ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" 
-            : "space-y-4"
-          }>
-            {businesses.map((business) => (
-              <BusinessCard key={business.id} business={business} />
-            ))}
+        ) : isEmpty ? (
+          /* Empty State for New Platform */
+          <div className="text-center py-16">
+            <div className="max-w-2xl mx-auto">
+              <div className="w-24 h-24 bg-afro-orange/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Store className="w-12 h-12 text-afro-orange" />
+              </div>
+              
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                {searchQuery ? `No results for "${searchQuery}"` : "No businesses yet"}
+              </h2>
+              
+              <p className="text-gray-600 mb-8">
+                {searchQuery 
+                  ? "We're still building our business directory. Join this category and start connecting with customers!"
+                  : "We're launching soon! Join Makna as a business or customer."
+                }
+              </p>
+
+              {/* Call to Action Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                {/* For Business Owners */}
+                <Card className="p-6 border-afro-orange/20 bg-gradient-to-br from-orange-50 to-red-50">
+                  <div className="text-center">
+                    <div className="w-12 h-12 bg-afro-orange/10 rounded-lg flex items-center justify-center mx-auto mb-4">
+                      <Plus className="w-6 h-6 text-afro-orange" />
+                    </div>
+                    <h3 className="font-semibold text-gray-900 mb-2">Own a Business?</h3>
+                    <p className="text-sm text-gray-600 mb-4">
+                      {searchQuery 
+                        ? `Be the first to offer "${searchQuery}" services on Makna`
+                        : "Register your business and start connecting with customers"
+                      }
+                    </p>
+                    <Button 
+                      className="bg-afro-orange hover:bg-afro-orange/90 w-full"
+                      onClick={() => navigate('/business/register')}
+                    >
+                      List Your Business
+                    </Button>
+                  </div>
+                </Card>
+
+                {/* For Customers */}
+                <Card className="p-6 border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50">
+                  <div className="text-center">
+                    <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                      <Users className="w-6 h-6 text-blue-600" />
+                    </div>
+                    <h3 className="font-semibold text-gray-900 mb-2">Looking for Services?</h3>
+                    <p className="text-sm text-gray-600 mb-4">
+                      Sign up to discover local businesses and get notified when new services become available
+                    </p>
+                    <Button 
+                      variant="outline"
+                      className="border-blue-200 text-blue-700 hover:bg-blue-50 w-full"
+                      onClick={() => navigate('/signup')}
+                    >
+                      Sign Up Now
+                    </Button>
+                  </div>
+                </Card>
+              </div>
+
+              {/* Popular Categories */}
+              <div className="text-left max-w-md mx-auto">
+                <h4 className="font-medium text-gray-900 mb-4 text-center">Categories we're looking for:</h4>
+                <div className="grid grid-cols-2 gap-3">
+                  {[
+                    "Beauty & Wellness",
+                    "Home Services", 
+                    "Automotive",
+                    "Food & Dining",
+                    "Health & Fitness",
+                    "Technology"
+                  ].map((category) => (
+                    <Button
+                      key={category}
+                      variant="outline"
+                      size="sm"
+                      className="justify-start text-left h-auto py-2"
+                      onClick={() => navigate('/business/register')}
+                    >
+                      <Plus className="w-3 h-3 mr-2 text-gray-400" />
+                      <span className="text-xs">{category}</span>
+                    </Button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Platform Benefits */}
+              <div className="mt-12 p-6 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl border border-blue-200">
+                <h4 className="font-semibold text-gray-900 mb-3">Why Join Makna?</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                    <span>Easy online presence</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                    <span>Customer booking management</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                    <span>Local customer discovery</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                    <span>Professional business profile</span>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         ) : (
-        <div className="text-center py-12">
-            <h3 className="text-lg font-medium mb-2">No businesses found</h3>
-            <p className="text-muted-foreground">
-              Try adjusting your search criteria or browse all businesses.
-            </p>
-            <Button asChild className="mt-4">
-              <Link to="/businesses">Browse All Businesses</Link>
-          </Button>
-        </div>
+          /* This would show actual results when businesses exist */
+          <div>
+            <p>Business results would appear here once we have businesses registered.</p>
+          </div>
         )}
       </div>
     </div>

@@ -1,205 +1,245 @@
-import { Link } from "react-router-dom";
-import { Star, MapPin, ArrowRight, Clock, Heart, Loader2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useBusinesses } from "@/hooks/useBusinesses";
-import { useFavorites } from "@/hooks/useFavorites";
-import { useAuth } from "@/contexts/AuthContext";
-import { toast } from "@/hooks/use-toast";
+import { 
+  Store, 
+  Users, 
+  MapPin, 
+  Rocket, 
+  ArrowRight, 
+  CheckCircle,
+  Heart,
+  Calendar,
+  Star
+} from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 
 const FeaturedBusinesses = () => {
-  const { user } = useAuth();
-  const { businesses, loading, error } = useBusinesses({
-    featured: true,
-    limit: 6
-  });
-  const { isFavorite, toggleFavorite } = useFavorites();
+  const navigate = useNavigate();
 
-  const handleToggleFavorite = async (businessId: string, businessName: string) => {
-    if (!user) {
-      toast({
-        title: "Login required",
-        description: "Please log in to add businesses to your favorites",
-        variant: "destructive",
-      });
-      return;
+  // Categories we're looking for businesses in
+  const targetCategories = [
+    {
+      name: "Beauty & Wellness",
+      description: "Hair salons, spas, beauty services",
+      icon: "💄",
+      color: "bg-pink-500"
+    },
+    {
+      name: "Home Services", 
+      description: "Cleaning, repairs, maintenance",
+      icon: "🏠",
+      color: "bg-blue-500"
+    },
+    {
+      name: "Automotive",
+      description: "Car wash, repairs, services",
+      icon: "🚗", 
+      color: "bg-gray-600"
+    },
+    {
+      name: "Food & Dining",
+      description: "Restaurants, catering, delivery",
+      icon: "🍽️",
+      color: "bg-orange-500"
+    },
+    {
+      name: "Health & Fitness",
+      description: "Gyms, trainers, wellness",
+      icon: "💪",
+      color: "bg-green-500"
+    },
+    {
+      name: "Technology",
+      description: "Phone repair, IT services",
+      icon: "💻",
+      color: "bg-purple-500"
     }
+  ];
 
-    const result = await toggleFavorite(businessId);
-    if (result.error) {
-      toast({
-        title: "Error",
-        description: result.error.message,
-        variant: "destructive",
-      });
-    } else {
-      toast({
-        title: isFavorite(businessId) ? "Added to favorites" : "Removed from favorites",
-        description: isFavorite(businessId) 
-          ? `${businessName} has been added to your favorites` 
-          : `${businessName} has been removed from your favorites`,
-      });
+  const platformBenefits = [
+    {
+      icon: Store,
+      title: "Your Business, Online",
+      description: "Create your professional business profile and reach new customers"
+    },
+    {
+      icon: Users,
+      title: "Connect with Customers", 
+      description: "Build relationships with local customers who need your services"
+    },
+    {
+      icon: Calendar,
+      title: "Manage Bookings",
+      description: "Simple booking system to organize your appointments and services"
     }
-  };
-
-  const getPriceRangeDisplay = (priceRange: string | null) => {
-    switch (priceRange) {
-      case 'budget': return '$';
-      case 'moderate': return '$$';
-      case 'expensive': return '$$$';
-      case 'luxury': return '$$$$';
-      default: return '$$';
-    }
-  };
-
-  if (loading) {
-    return (
-      <section className="py-16 md:py-20 bg-gradient-to-b from-gray-50 to-white">
-        <div className="container mx-auto px-4">
-          <div className="flex justify-between items-center mb-8 md:mb-12">
-            <div>
-              <h2 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-afro-orange to-afro-purple bg-clip-text text-transparent">
-                Featured Businesses
-              </h2>
-              <p className="text-muted-foreground mt-2">
-                Discover top-rated local businesses in Namibia
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center justify-center py-12">
-            <div className="text-center">
-              <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
-              <p className="text-muted-foreground">Loading featured businesses...</p>
-            </div>
-          </div>
-        </div>
-      </section>
-    );
-  }
-
-  if (error) {
-    return (
-      <section className="py-16 md:py-20 bg-gradient-to-b from-gray-50 to-white">
-        <div className="container mx-auto px-4">
-          <div className="flex justify-between items-center mb-8 md:mb-12">
-            <div>
-              <h2 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-afro-orange to-afro-purple bg-clip-text text-transparent">
-                Featured Businesses
-              </h2>
-              <p className="text-muted-foreground mt-2">
-                Discover top-rated local businesses in Namibia
-              </p>
-            </div>
-          </div>
-          <div className="text-center py-12">
-            <p className="text-muted-foreground">Unable to load featured businesses. Please try again later.</p>
-          </div>
-        </div>
-      </section>
-    );
-  }
+  ];
 
   return (
-    <section className="py-16 md:py-20 bg-gradient-to-b from-gray-50 to-white">
-      <div className="container mx-auto px-4">
-        <div className="flex justify-between items-center mb-8 md:mb-12">
-          <div>
-            <h2 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-afro-orange to-afro-purple bg-clip-text text-transparent">
-              Featured Businesses
-            </h2>
-            <p className="text-muted-foreground mt-2">
-              Discover top-rated local businesses in Namibia
-            </p>
-          </div>
-          <Link to="/businesses" className="hidden md:flex items-center text-primary hover:underline font-medium">
-            View All <ArrowRight className="ml-2 h-4 w-4" />
-          </Link>
+    <div className="space-y-12">
+      {/* Call to Action for Business Owners */}
+      <div className="text-center">
+        <div className="mb-8">
+          <Badge className="bg-afro-orange/10 text-afro-orange border-afro-orange/20">
+            <Rocket className="w-3 h-3 mr-1" />
+            Launching Soon
+          </Badge>
+        </div>
+        
+        <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">
+          Are You a Local Business Owner?
+        </h2>
+        <p className="text-lg text-gray-600 max-w-2xl mx-auto mb-8">
+          Join Makna and help us build Namibia's local business community. 
+          Connect with customers in your area and grow your business.
+        </p>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          {platformBenefits.map((benefit, index) => (
+            <Card key={index} className="p-6 text-center border-0 shadow-md bg-gradient-to-br from-gray-50 to-white">
+              <div className="w-12 h-12 bg-afro-orange/10 rounded-lg flex items-center justify-center mx-auto mb-4">
+                <benefit.icon className="w-6 h-6 text-afro-orange" />
+              </div>
+              <h3 className="font-semibold text-gray-900 mb-2">{benefit.title}</h3>
+              <p className="text-sm text-gray-600">{benefit.description}</p>
+            </Card>
+          ))}
         </div>
 
-        {businesses && businesses.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {businesses.map((business) => (
-              <Card key={business.id} className="group overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-                <div className="relative">
-                  <img
-                    src={business.cover_image_url || business.logo_url || "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=400&h=300&fit=crop"}
-                    alt={business.name}
-                    className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                  <div className="absolute top-3 left-3">
-                    <Badge variant="secondary" className="bg-white/90 text-afro-orange font-medium">
-                      {business.categories?.name || 'Business'}
-                    </Badge>
-                  </div>
-                  <div className="absolute top-3 right-3">
-                    <Button 
-                      size="icon" 
-                      variant="ghost" 
-                      className="bg-white/90 hover:bg-white h-8 w-8"
-                      onClick={() => handleToggleFavorite(business.id, business.name)}
-                    >
-                      <Heart className={`h-4 w-4 ${isFavorite(business.id) ? 'fill-red-500 text-red-500' : ''}`} />
-                    </Button>
-                  </div>
-                  <div className="absolute bottom-3 left-3">
-                    <div className="flex items-center gap-1 bg-white/90 rounded-full px-2 py-1">
-                      <Clock className="h-3 w-3 text-green-600" />
-                      <span className="text-xs font-medium text-green-600">
-                        Open
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="p-4">
-                  <div className="flex items-start justify-between mb-2">
-                    <h3 className="font-semibold text-lg group-hover:text-afro-orange transition-colors">
-                      {business.name}
-                    </h3>
-                    <span className="text-sm text-muted-foreground font-medium">
-                      {getPriceRangeDisplay(business.price_range)}
-                    </span>
-                  </div>
-                  
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="flex items-center gap-1">
-                      <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
-                      <span className="font-medium text-sm">{business.average_rating?.toFixed(1) || 'N/A'}</span>
-                      <span className="text-muted-foreground text-sm">({business.review_count || 0})</span>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center text-muted-foreground text-sm mb-4">
-                    <MapPin className="h-4 w-4 mr-1" />
-                    {business.city}, {business.region}
-                  </div>
-                  
-                  <Button asChild className="w-full bg-afro-green hover:bg-afro-green/90">
-                    <Link to={`/business/${business.id}`}>
-                      View Details
-                    </Link>
-                  </Button>
-                </div>
-              </Card>
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-12">
-            <p className="text-muted-foreground">No featured businesses available at the moment.</p>
-          </div>
-        )}
-        
-        <div className="text-center mt-12">
-          <Button variant="outline" size="lg" asChild className="shadow-sm">
-            <Link to="/businesses" className="flex items-center">
-              Explore All Businesses
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Link>
+        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <Button 
+            size="lg"
+            className="bg-afro-orange hover:bg-afro-orange/90"
+            onClick={() => navigate('/business/register')}
+          >
+            <Store className="w-4 h-4 mr-2" />
+            Register Your Business
+          </Button>
+          <Button 
+            variant="outline" 
+            size="lg"
+            onClick={() => navigate('/contact')}
+          >
+            Learn More
+            <ArrowRight className="w-4 h-4 ml-2" />
           </Button>
         </div>
       </div>
-    </section>
+
+      {/* Categories We're Looking For */}
+      <div className="text-center">
+        <h3 className="text-xl font-bold text-gray-900 mb-4">
+          Business Categories We're Looking For
+        </h3>
+        <p className="text-gray-600 mb-8">
+          Be among the first in your category to join Makna
+        </p>
+
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          {targetCategories.map((category, index) => (
+            <Card 
+              key={index} 
+              className="p-4 text-center border-0 shadow-sm hover:shadow-md transition-shadow bg-white"
+            >
+              <div className="text-2xl mb-2">{category.icon}</div>
+              <h4 className="font-medium text-gray-900 mb-1">{category.name}</h4>
+              <p className="text-xs text-gray-600">{category.description}</p>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="mt-3 text-afro-orange hover:text-afro-orange hover:bg-afro-orange/5"
+                onClick={() => navigate('/business/register')}
+              >
+                Join this category
+              </Button>
+            </Card>
+          ))}
+        </div>
+      </div>
+
+      {/* Platform Benefits */}
+      <Card className="p-8 bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200 text-center">
+        <div className="mb-4">
+          <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto">
+            <CheckCircle className="w-8 h-8 text-blue-600" />
+          </div>
+        </div>
+        
+        <h3 className="text-xl font-bold text-gray-900 mb-4">
+          Why Join Makna?
+        </h3>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto text-left">
+          <div className="flex items-start gap-3">
+            <CheckCircle className="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0" />
+            <div>
+              <div className="font-medium text-gray-900">Easy Online Presence</div>
+              <div className="text-sm text-gray-600">Professional business profile setup</div>
+            </div>
+          </div>
+          
+          <div className="flex items-start gap-3">
+            <CheckCircle className="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0" />
+            <div>
+              <div className="font-medium text-gray-900">Customer Discovery</div>
+              <div className="text-sm text-gray-600">Connect with local customers</div>
+            </div>
+          </div>
+          
+          <div className="flex items-start gap-3">
+            <CheckCircle className="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0" />
+            <div>
+              <div className="font-medium text-gray-900">Booking Management</div>
+              <div className="text-sm text-gray-600">Simple appointment scheduling</div>
+            </div>
+          </div>
+          
+          <div className="flex items-start gap-3">
+            <CheckCircle className="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0" />
+            <div>
+              <div className="font-medium text-gray-900">Local Market Access</div>
+              <div className="text-sm text-gray-600">Reach customers in your area</div>
+            </div>
+          </div>
+        </div>
+
+        <Button 
+          size="lg" 
+          className="mt-6 bg-blue-600 hover:bg-blue-700"
+          onClick={() => navigate('/business/register')}
+        >
+          Register Your Business
+        </Button>
+      </Card>
+
+      {/* For Customers */}
+      <div className="text-center bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-8">
+        <h3 className="text-xl font-bold text-gray-900 mb-4">
+          Looking for Services?
+        </h3>
+        <p className="text-gray-600 mb-6">
+          Sign up to be notified when businesses in your area join Makna. 
+          Be the first to discover and book with local service providers.
+        </p>
+        
+        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <Button 
+            variant="outline"
+            onClick={() => navigate('/signup')}
+          >
+            <Users className="w-4 h-4 mr-2" />
+            Sign Up Now
+          </Button>
+          <Button 
+            variant="ghost"
+            onClick={() => navigate('/categories')}
+          >
+            Browse Categories
+            <ArrowRight className="w-4 h-4 ml-2" />
+          </Button>
+        </div>
+      </div>
+    </div>
   );
 };
 

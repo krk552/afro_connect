@@ -25,17 +25,10 @@ import {
 import { Slider } from "@/components/ui/slider";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useCategory } from "@/hooks/useCategories";
-import { useBusinesses } from "@/hooks/useBusinesses";
+import { useBusinesses, BusinessWithCategory } from "@/hooks/useBusinesses";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
-import { Database } from "@/integrations/supabase/types";
-
-type BusinessWithCategory = Database['public']['Tables']['businesses']['Row'] & {
-  categories: Database['public']['Tables']['categories']['Row'] | null;
-  services: Database['public']['Tables']['services']['Row'][];
-  business_hours: Database['public']['Tables']['business_hours']['Row'][];
-};
 
 const CategoryPage = () => {
   const { categorySlug } = useParams();
@@ -204,6 +197,14 @@ const CategoryPage = () => {
       <div className="container mx-auto px-4">
         {/* Header */}
         <div className="mb-8">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
+            <Link to="/" className="hover:text-afro-orange">Home</Link>
+            <span>/</span>
+            <Link to="/categories" className="hover:text-afro-orange">Categories</Link>
+            <span>/</span>
+            <span className="text-gray-900">{category.name}</span>
+          </div>
+          
           <Button variant="ghost" size="sm" asChild className="mb-4">
             <Link to="/categories">
               <ArrowLeft className="h-4 w-4 mr-2" />
@@ -215,6 +216,12 @@ const CategoryPage = () => {
           <p className="text-muted-foreground">
             {category.description || 'Discover the best ' + category.name.toLowerCase() + ' businesses in Namibia'}
           </p>
+          <div className="mt-2">
+            <Badge variant="outline" className="text-xs">
+              <Filter className="w-3 h-3 mr-1" />
+              Use filters on the left to refine your search
+            </Badge>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">

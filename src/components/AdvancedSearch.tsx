@@ -28,6 +28,7 @@ import {
   X,
   SlidersHorizontal
 } from "lucide-react";
+import { useCategories } from '@/hooks/useCategories';
 
 interface SearchFilters {
   query: string;
@@ -44,19 +45,6 @@ interface AdvancedSearchProps {
   onSearch: (filters: SearchFilters) => void;
   onClear: () => void;
 }
-
-const categories = [
-  "All Categories",
-  "Hair & Beauty Salon",
-  "Restaurant",
-  "Auto Services", 
-  "Home Services",
-  "Cleaning Services",
-  "Events & Entertainment",
-  "Retail & Shopping",
-  "Health & Wellness",
-  "Education & Training"
-];
 
 const locations = [
   "All Locations",
@@ -161,6 +149,9 @@ export const AdvancedSearch = ({ onSearch, onClear }: AdvancedSearchProps) => {
     if (filters.amenities.length > 0) count++;
     return count;
   };
+
+  const { categories: dynamicCategories } = useCategories();
+  const categories = ['All Categories', ...dynamicCategories.map(cat => cat.name)];
 
   return (
     <div className="w-full space-y-4">

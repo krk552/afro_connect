@@ -1,160 +1,89 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { 
   User, 
   MapPin, 
-  Phone, 
-  Camera, 
   CheckCircle, 
-  ArrowRight, 
-  Star,
-  Search,
-  Calendar,
-  Heart
+  ArrowRight,
+  Sparkles
 } from 'lucide-react';
 import { toast } from 'sonner';
 
 const OnboardingPage = () => {
   const { user, profile, updateProfile, refreshProfile } = useAuth();
   const navigate = useNavigate();
-  const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
     phone: '',
-    bio: '',
-    location: 'Windhoek',
-    interests: [] as string[],
-    profileImage: null as File | null
+    location: 'Windhoek'
   });
-
-  const totalSteps = 4;
-  const availableInterests = [
-    'Hair & Beauty', 'Home Services', 'Automotive', 'Health & Wellness',
-    'Food & Catering', 'Photography', 'Cleaning', 'Repairs & Maintenance',
-    'Fashion & Styling', 'Fitness & Training', 'Education & Tutoring',
-    'Event Planning', 'Technology Services', 'Legal Services'
-  ];
 
   const locations = [
     'Windhoek', 'Walvis Bay', 'Swakopmund', 'Oshakati', 
-    'Rundu', 'Katima Mulilo', 'Gobabis', 'Otjiwarongo'
+    'Rundu', 'Katima Mulilo', 'Gobabis', 'Otjiwarongo', 'Rehoboth', 'Mariental'
   ];
 
+  // Pre-fill if we have user data
   useEffect(() => {
-    // Pre-fill form with existing data
-    if (profile) {
-      setFormData(prev => ({
-        ...prev,
-        firstName: profile.first_name || '',
-        lastName: profile.last_name || '',
-        phone: profile.phone || '',
-        bio: (profile.metadata as any)?.bio || '',
-        location: profile.location_city || 'Windhoek'
-      }));
-    } else if (user?.user_metadata) {
-      setFormData(prev => ({
-        ...prev,
+    if (user?.user_metadata) {
+      setFormData({
         firstName: user.user_metadata.first_name || '',
         lastName: user.user_metadata.last_name || '',
-        phone: user.user_metadata.phone || ''
-      }));
+        phone: user.user_metadata.phone || '',
+        location: 'Windhoek'
+      });
     }
-  }, [profile, user]);
+  }, [user]);
 
-  const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-  };
-
-  const toggleInterest = (interest: string) => {
-    setFormData(prev => ({
-      ...prev,
-      interests: prev.interests.includes(interest)
-        ? prev.interests.filter(i => i !== interest)
-        : [...prev.interests, interest]
-    }));
-  };
-
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      setFormData(prev => ({ ...prev, profileImage: file }));
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!formData.firstName.trim() || !formData.lastName.trim()) {
+      toast.error('Please enter your name');
+      return;
     }
-  };
 
-  const uploadProfileImage = async (file: File): Promise<string | null> => {
-    try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${user?.id}-${Date.now()}.${fileExt}`;
-      
-      const { error: uploadError } = await supabase.storage
-        .from('profile-images')
-        .upload(fileName, file);
-
-      if (uploadError) throw uploadError;
-
-      const { data } = supabase.storage
-        .from('profile-images')
-        .getPublicUrl(fileName);
-
-      return data.publicUrl;
-    } catch (error) {
-      console.error('Error uploading image:', error);
-      return null;
-    }
-  };
-
-  const handleNext = async () => {
-    if (currentStep < totalSteps) {
-      setCurrentStep(prev => prev + 1);
-    } else {
-      await handleComplete();
-    }
-  };
-
-  const handleComplete = async () => {
     setLoading(true);
+
     try {
-      let profileImageUrl = null;
-      
-      // Upload profile image if provided
-      if (formData.profileImage) {
-        profileImageUrl = await uploadProfileImage(formData.profileImage);
-      }
+      // Update profile in our users table
+      const { error } = await supabase
+        .from('users')
+        .upsert({
+          id: user?.id,
+          email: user?.email,
+          first_name: formData.firstName.trim(),
+          last_name: formData.lastName.trim(),
+          phone: formData.phone.trim() || null,
+          location_city: formData.location,
+          role: 'customer',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        });
 
-      // Update user profile
-      const updates = {
-        first_name: formData.firstName,
-        last_name: formData.lastName,
-        phone: formData.phone,
-        location_city: formData.location,
-        metadata: {
-          bio: formData.bio,
-          interests: formData.interests,
+      if (error) throw error;
+
+      // Update auth metadata
+      await supabase.auth.updateUser({
+        data: {
+          first_name: formData.firstName.trim(),
+          last_name: formData.lastName.trim(),
+          phone: formData.phone.trim(),
           onboarding_completed: true
-        },
-        profile_image_url: profileImageUrl,
-        updated_at: new Date().toISOString()
-      };
-
-      const { error } = await updateProfile(updates);
-      
-      if (error) {
-        toast.error('Failed to update profile');
-        return;
-      }
+        }
+      });
 
       await refreshProfile();
-      toast.success('Welcome to AfroBiz Connect! Your profile is now complete.');
+      
+      toast.success('Welcome to Makna! 🎉');
       navigate('/');
     } catch (error) {
       console.error('Onboarding error:', error);
@@ -164,235 +93,143 @@ const OnboardingPage = () => {
     }
   };
 
-  const renderStep = () => {
-    switch (currentStep) {
-      case 1:
-        return (
-          <div className="space-y-6">
-            <div className="text-center">
-              <h2 className="text-2xl font-bold mb-2">Welcome to AfroBiz Connect! 🎉</h2>
-              <p className="text-muted-foreground">
-                Let's set up your profile so you can start discovering amazing local businesses in Namibia.
-              </p>
-            </div>
-            
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-afro-orange/5 via-white to-afro-blue/5 flex items-center justify-center p-4">
+      <div className="w-full max-w-md">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <div className="w-16 h-16 bg-afro-orange/10 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Sparkles className="w-8 h-8 text-afro-orange" />
+          </div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">
+            Welcome to Makna!
+          </h1>
+          <p className="text-gray-600">
+            Let's get you set up in just a minute
+          </p>
+        </div>
+
+        {/* Quick Setup Form */}
+        <Card className="border-0 shadow-lg">
+          <CardContent className="p-6">
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {/* Name Fields */}
+              <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <Label htmlFor="firstName">First Name</Label>
+                  <Label htmlFor="firstName" className="text-sm font-medium text-gray-700">
+                    First name
+                  </Label>
                   <Input
                     id="firstName"
+                    type="text"
                     value={formData.firstName}
-                    onChange={(e) => handleInputChange('firstName', e.target.value)}
-                    placeholder="Enter your first name"
+                    onChange={(e) => setFormData(prev => ({ ...prev, firstName: e.target.value }))}
+                    placeholder="John"
+                    className="mt-1"
+                    required
                   />
                 </div>
                 <div>
-                  <Label htmlFor="lastName">Last Name</Label>
+                  <Label htmlFor="lastName" className="text-sm font-medium text-gray-700">
+                    Last name
+                  </Label>
                   <Input
                     id="lastName"
+                    type="text"
                     value={formData.lastName}
-                    onChange={(e) => handleInputChange('lastName', e.target.value)}
-                    placeholder="Enter your last name"
+                    onChange={(e) => setFormData(prev => ({ ...prev, lastName: e.target.value }))}
+                    placeholder="Doe"
+                    className="mt-1"
+                    required
                   />
                 </div>
               </div>
-              
+
+              {/* Phone */}
               <div>
-                <Label htmlFor="phone">Phone Number (Optional)</Label>
+                <Label htmlFor="phone" className="text-sm font-medium text-gray-700">
+                  Phone (optional)
+                </Label>
                 <Input
                   id="phone"
+                  type="tel"
                   value={formData.phone}
-                  onChange={(e) => handleInputChange('phone', e.target.value)}
-                  placeholder="+264 81 234 5678"
+                  onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+                  placeholder="+264 81 123 4567"
+                  className="mt-1"
                 />
               </div>
-            </div>
-          </div>
-        );
 
-      case 2:
-        return (
-          <div className="space-y-6">
-            <div className="text-center">
-              <h2 className="text-2xl font-bold mb-2">Tell us about yourself</h2>
-              <p className="text-muted-foreground">
-                Add a photo and bio to help businesses get to know you better.
-              </p>
-            </div>
-            
-            <div className="space-y-4">
-              <div className="text-center">
-                <div className="relative inline-block">
-                  <div className="w-24 h-24 rounded-full bg-muted flex items-center justify-center overflow-hidden">
-                    {formData.profileImage ? (
-                      <img 
-                        src={URL.createObjectURL(formData.profileImage)} 
-                        alt="Profile" 
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <User size={32} className="text-muted-foreground" />
-                    )}
-                  </div>
-                  <label htmlFor="profileImage" className="absolute -bottom-2 -right-2 bg-primary text-white rounded-full p-2 cursor-pointer hover:bg-primary/90">
-                    <Camera size={16} />
-                  </label>
-                  <input
-                    id="profileImage"
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                    className="hidden"
-                  />
-                </div>
-              </div>
-              
+              {/* Location */}
               <div>
-                <Label htmlFor="bio">Bio (Optional)</Label>
-                <Textarea
-                  id="bio"
-                  value={formData.bio}
-                  onChange={(e) => handleInputChange('bio', e.target.value)}
-                  placeholder="Tell us a bit about yourself..."
-                  rows={3}
-                />
-              </div>
-              
-              <div>
-                <Label htmlFor="location">Location</Label>
+                <Label htmlFor="location" className="text-sm font-medium text-gray-700">
+                  Your location
+                </Label>
                 <select
                   id="location"
                   value={formData.location}
-                  onChange={(e) => handleInputChange('location', e.target.value)}
-                  className="w-full p-2 border rounded-md"
+                  onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
+                  className="mt-1 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:border-afro-orange focus:outline-none focus:ring-1 focus:ring-afro-orange"
+                  required
                 >
-                  {locations.map(location => (
-                    <option key={location} value={location}>{location}</option>
+                  {locations.map((location) => (
+                    <option key={location} value={location}>
+                      {location}
+                    </option>
                   ))}
                 </select>
               </div>
-            </div>
-          </div>
-        );
 
-      case 3:
-        return (
-          <div className="space-y-6">
-            <div className="text-center">
-              <h2 className="text-2xl font-bold mb-2">What interests you?</h2>
-              <p className="text-muted-foreground">
-                Select the types of services you're most interested in to get personalized recommendations.
-              </p>
-            </div>
-            
-            <div className="grid grid-cols-2 gap-2">
-              {availableInterests.map(interest => (
-                <Badge
-                  key={interest}
-                  variant={formData.interests.includes(interest) ? "default" : "outline"}
-                  className="cursor-pointer p-3 text-center justify-center"
-                  onClick={() => toggleInterest(interest)}
-                >
-                  {interest}
-                </Badge>
-              ))}
-            </div>
-          </div>
-        );
+              {/* Submit */}
+              <Button 
+                type="submit" 
+                className="w-full bg-afro-orange hover:bg-afro-orange/90 mt-6"
+                disabled={loading}
+              >
+                {loading ? (
+                  'Setting up your account...'
+                ) : (
+                  <>
+                    Get Started
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </>
+                )}
+              </Button>
+            </form>
 
-      case 4:
-        return (
-          <div className="space-y-6">
-            <div className="text-center">
-              <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
-              <h2 className="text-2xl font-bold mb-2">You're all set! 🚀</h2>
-              <p className="text-muted-foreground mb-6">
-                Your profile is complete. Here's what you can do on AfroBiz Connect:
-              </p>
+            {/* Skip Option */}
+            <div className="text-center mt-4">
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => navigate('/')}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                Skip for now
+              </Button>
             </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Card>
-                <CardContent className="p-4 text-center">
-                  <Search className="w-8 h-8 text-primary mx-auto mb-2" />
-                  <h3 className="font-semibold mb-1">Discover Businesses</h3>
-                  <p className="text-sm text-muted-foreground">Find local services and businesses near you</p>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardContent className="p-4 text-center">
-                  <Calendar className="w-8 h-8 text-primary mx-auto mb-2" />
-                  <h3 className="font-semibold mb-1">Book Services</h3>
-                  <p className="text-sm text-muted-foreground">Schedule appointments instantly</p>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardContent className="p-4 text-center">
-                  <Star className="w-8 h-8 text-primary mx-auto mb-2" />
-                  <h3 className="font-semibold mb-1">Leave Reviews</h3>
-                  <p className="text-sm text-muted-foreground">Share your experiences with others</p>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardContent className="p-4 text-center">
-                  <Heart className="w-8 h-8 text-primary mx-auto mb-2" />
-                  <h3 className="font-semibold mb-1">Save Favorites</h3>
-                  <p className="text-sm text-muted-foreground">Keep track of your favorite businesses</p>
-                </CardContent>
-              </Card>
+          </CardContent>
+        </Card>
+
+        {/* Benefits */}
+        <div className="mt-6 text-center">
+          <p className="text-sm text-gray-600 mb-3">With your account you can:</p>
+          <div className="flex flex-wrap justify-center gap-4 text-xs text-gray-500">
+            <div className="flex items-center gap-1">
+              <CheckCircle className="w-3 h-3 text-green-500" />
+              <span>Save favorites</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <CheckCircle className="w-3 h-3 text-green-500" />
+              <span>Get notified</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <CheckCircle className="w-3 h-3 text-green-500" />
+              <span>Quick booking</span>
             </div>
           </div>
-        );
-
-      default:
-        return null;
-    }
-  };
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center p-4">
-      <Card className="w-full max-w-2xl">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle>Getting Started</CardTitle>
-            <span className="text-sm text-muted-foreground">
-              Step {currentStep} of {totalSteps}
-            </span>
-          </div>
-          <div className="w-full bg-muted rounded-full h-2">
-            <div 
-              className="bg-primary h-2 rounded-full transition-all duration-300"
-              style={{ width: `${(currentStep / totalSteps) * 100}%` }}
-            />
-          </div>
-        </CardHeader>
-        
-        <CardContent>
-          {renderStep()}
-          
-          <div className="flex justify-between mt-8">
-            <Button
-              variant="outline"
-              onClick={() => setCurrentStep(prev => Math.max(1, prev - 1))}
-              disabled={currentStep === 1}
-            >
-              Previous
-            </Button>
-            
-            <Button
-              onClick={handleNext}
-              disabled={loading || (currentStep === 1 && (!formData.firstName || !formData.lastName))}
-            >
-              {loading ? 'Saving...' : currentStep === totalSteps ? 'Complete Setup' : 'Next'}
-              {currentStep < totalSteps && <ArrowRight className="ml-2 w-4 h-4" />}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 };

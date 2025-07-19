@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Search, MapPin, Sparkles, TrendingUp } from "lucide-react";
+import { Search, MapPin, Sparkles, TrendingUp, Users, Rocket, Gift } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
@@ -14,9 +14,17 @@ const Hero = () => {
       navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
     }
   };
-  
-  const popularSearches = [
-    "Hair Salons", "Cleaning Services", "Home Repairs", "Beauty Spa", "Car Wash"
+
+  // Realistic launch benefits - no fake numbers
+  const launchBenefits = [
+    { icon: Rocket, label: "Launching in Namibia" },
+    { icon: Gift, label: "Free to join" },
+    { icon: Users, label: "Connecting local communities" }
+  ];
+
+  // Service categories people can search for
+  const searchSuggestions = [
+    "hair salon", "cleaning service", "mechanic", "restaurant"
   ];
   
   return (
@@ -34,30 +42,40 @@ const Hero = () => {
       
       <div className="relative container mx-auto px-4 py-20 md:py-32 lg:py-40">
         <div className="text-center max-w-5xl mx-auto">
-          {/* Badge */}
+          {/* Launch Badge */}
           <div className="mb-6 animate-slide-in">
-            <Badge variant="outline" className="bg-white/20 text-white border-white/30 backdrop-blur-sm">
+            <Badge variant="outline" className="bg-white/20 text-white border-white/30 backdrop-blur-sm px-4 py-2">
               <Sparkles className="w-3 h-3 mr-1" />
-              Discover Local Businesses in Namibia
+              🚀 Now Launching in Namibia
             </Badge>
           </div>
           
           {/* Main heading */}
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight animate-slide-in delay-200">
-            Find & Book Local
+            Find Local Services
             <span className="block bg-gradient-to-r from-afro-yellow to-afro-green bg-clip-text text-transparent">
-              Services Instantly
+              Near You
             </span>
           </h1>
           
           {/* Subtitle */}
-          <p className="text-lg md:text-xl text-white/90 mb-10 max-w-2xl mx-auto leading-relaxed animate-slide-in delay-300">
-            Connect with trusted local businesses across Namibia. From hair salons to home services, 
-            discover, book, and review all in one place.
+          <p className="text-lg md:text-xl text-white/90 mb-8 max-w-2xl mx-auto leading-relaxed animate-slide-in delay-300">
+            Discover and connect with local businesses across Namibia. 
+            <strong className="text-afro-yellow"> Join us in building something amazing together.</strong>
           </p>
+
+          {/* Launch benefits */}
+          <div className="flex flex-wrap justify-center gap-6 mb-10 animate-slide-in delay-400">
+            {launchBenefits.map((benefit, index) => (
+              <div key={index} className="flex items-center text-white/80 text-sm">
+                <benefit.icon className="w-4 h-4 mr-2 text-afro-yellow" />
+                <span>{benefit.label}</span>
+              </div>
+            ))}
+          </div>
           
           {/* Search form */}
-          <form onSubmit={handleSubmit} className="relative max-w-2xl mx-auto mb-8 animate-slide-in delay-500">
+          <form onSubmit={handleSubmit} className="relative max-w-3xl mx-auto mb-12 animate-slide-in delay-500">
             <div className="relative">
               <div className="absolute inset-0 bg-white/20 backdrop-blur-sm rounded-2xl"></div>
               <div className="relative flex flex-col md:flex-row gap-3 p-3 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 shadow-2xl">
@@ -65,71 +83,50 @@ const Hero = () => {
                   <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white/70 z-10" size={20} />
                   <input
                     type="text"
-                    placeholder="Search for salons, shops, services..."
+                    placeholder={`Try "${searchSuggestions[Math.floor(Math.random() * searchSuggestions.length)]}" or browse categories`}
                     className="w-full pl-12 pr-4 py-4 rounded-xl bg-white/20 backdrop-blur-sm text-white placeholder-white/70 border border-white/20 focus:outline-none focus:ring-2 focus:ring-afro-yellow focus:border-transparent transition-all"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                   />
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="hidden md:flex items-center text-white/70 px-3">
+                  <div className="hidden md:flex items-center text-white/70 px-3 py-2 bg-white/10 rounded-lg border border-white/20">
                     <MapPin size={16} className="mr-1" />
                     <span className="text-sm">Windhoek</span>
                   </div>
                   <Button 
                     type="submit" 
-                    size="lg" 
-                    className="bg-afro-green hover:bg-afro-green/90 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 px-8"
+                    size="lg"
+                    className="bg-afro-yellow hover:bg-afro-yellow/90 text-black font-semibold px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
                   >
-                    <Search className="w-4 h-4 mr-2" />
                     Search
                   </Button>
                 </div>
               </div>
             </div>
           </form>
-          
-          {/* Popular searches */}
-          <div className="animate-slide-in delay-700">
-            <div className="flex items-center justify-center gap-2 mb-4">
-              <TrendingUp className="w-4 h-4 text-white/70" />
-              <span className="text-white/70 text-sm font-medium">Trending searches:</span>
-            </div>
-            <div className="flex flex-wrap justify-center gap-2">
-              {popularSearches.map((search, index) => (
-                <Button
-                  key={search}
-                  variant="outline"
-                  size="sm"
-                  className="rounded-full bg-white/10 text-white hover:bg-white hover:text-afro-orange border-white/30 backdrop-blur-sm transition-all duration-300 hover:scale-105"
-                  onClick={() => {
-                    setSearchQuery(search);
-                    navigate(`/search?q=${encodeURIComponent(search)}`);
-                  }}
-                >
-                  {search}
-                </Button>
-              ))}
+
+          {/* Call to action for new platform */}
+          <div className="mb-8 animate-slide-in delay-600">
+            <p className="text-white/80 text-sm mb-4">Join us in building Namibia's local business community:</p>
+            <div className="flex flex-wrap justify-center gap-6 text-white/90 text-sm">
+              <span>• Discover local services</span>
+              <span>• Support local businesses</span>
+              <span>• Connect with your community</span>
             </div>
           </div>
-          
-          {/* Stats */}
-          <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-8 animate-slide-in delay-1000">
+
+          {/* Business owner CTA */}
+          <div className="flex flex-wrap justify-center gap-4 text-white/80 animate-slide-in delay-700">
             <div className="text-center">
-              <div className="text-2xl md:text-3xl font-bold text-white">500+</div>
-              <div className="text-white/70 text-sm">Local Businesses</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl md:text-3xl font-bold text-white">2K+</div>
-              <div className="text-white/70 text-sm">Happy Customers</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl md:text-3xl font-bold text-white">50+</div>
-              <div className="text-white/70 text-sm">Service Categories</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl md:text-3xl font-bold text-white">24/7</div>
-              <div className="text-white/70 text-sm">Online Booking</div>
+              <div className="text-sm opacity-80">Own a business?</div>
+              <Button 
+                variant="outline" 
+                className="mt-2 bg-white/10 border-white/30 text-white hover:bg-white hover:text-gray-900"
+                onClick={() => navigate('/business/register')}
+              >
+                Join as a Pro
+              </Button>
             </div>
           </div>
         </div>
