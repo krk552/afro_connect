@@ -46,9 +46,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Fetch user profile from the database with timeout
   const fetchUserProfile = async (userId: string) => {
     try {
+      console.log('👤 Fetching user profile for:', userId);
+      
       // Add timeout to prevent hanging
       const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Profile fetch timeout')), 10000)
+        setTimeout(() => {
+          console.error('⏰ Profile fetch timeout after 10 seconds');
+          reject(new Error('Profile fetch timeout'));
+        }, 10000)
       );
 
       const profilePromise = supabase
@@ -57,6 +62,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .eq('id', userId)
         .single();
 
+      console.log('📡 Sending profile query to database...');
       const { data, error } = await Promise.race([profilePromise, timeoutPromise]) as any;
 
       if (error) {
@@ -64,10 +70,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return null;
       }
 
-      console.log('✅ Profile fetched successfully');
+      console.log('✅ Profile fetched successfully:', { 
+        hasProfile: !!data, 
+        email: data?.email,
+        role: data?.role 
+      });
       return data;
     } catch (error) {
-      console.error('❌ Error fetching profile:', error);
+      console.error('❌ Exception in fetchUserProfile:', error);
       return null;
     }
   };
@@ -75,6 +85,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Optimized function to fetch profile and update last login in parallel
   const fetchProfileAndUpdateLogin = async (userId: string) => {
     try {
+      console.log('🚀 Starting parallel profile fetch and login update for:', userId);
+      
       // Run both operations in parallel for better performance
       const [profileResult, updateResult] = await Promise.allSettled([
         fetchUserProfile(userId),
@@ -93,13 +105,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       // Return profile data regardless of update success
       if (profileResult.status === 'fulfilled') {
+        console.log('✅ Profile and login update completed');
         return profileResult.value;
       } else {
-        console.error('❌ Error fetching profile:', profileResult.reason);
+        console.error('❌ Profile fetch failed:', profileResult.reason);
         return null;
       }
     } catch (error) {
-      console.error('❌ Error in fetchProfileAndUpdateLogin:', error);
+      console.error('❌ Exception in fetchProfileAndUpdateLogin:', error);
       return null;
     }
   };
@@ -316,9 +329,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signIn = async (email: string, password: string) => {
     try {
-      // Add timeout to prevent hanging login
+      console.log('🔑 Starting sign-in process for:', email);
+      
+      // Increase timeout to 30 seconds and add better logging
       const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Login timeout - please try again')), 15000)
+        setTimeout(() => {
+          console.error('⏰ Sign-in timeout after 30 seconds');
+          reject(new Error('Login timeout - please try again'));
+        }, 30000)
       );
 
       const loginPromise = supabase.auth.signInWithPassword({
@@ -326,10 +344,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         password,
       });
 
-      const { data, error } = await Promise.race([loginPromise, timeoutPromise]) as any;
-      return { error };
+      console.log('📡 Sending login request to Supabase...');
+      const result = await Promise.race([loginPromise, timeoutPromise]) as { error: any; data?: any };
+      
+      console.log('✅ Login request completed:', { 
+        hasError: !!result.error, 
+        errorMessage: result.error?.message 
+      });
+      
+      return { error: result.error };
     } catch (error) {
-      console.error('Error during sign in:', error);
+      console.error('❌ Error during sign in:', error);
       return { error: error instanceof Error ? error : new Error('Login failed') };
     }
   };
