@@ -167,54 +167,42 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(session?.user ?? null);
         
         if (event === 'SIGNED_IN' && session?.user) {
-          console.log('👤 User signed in, fetching profile and updating last_login_at...');
-          const profileData = await fetchProfileAndUpdateLogin(session.user.id);
+          console.log('👤 User signed in, simplified profile handling...');
           
-          // If no profile found, try to create one from auth user data
+          // Simplified approach - just get basic profile without complex operations
+          const profileData = await fetchUserProfile(session.user.id);
+          setProfile(profileData);
+          
+          // Skip the complex last_login_at update for now to test performance
+          // const profileData = await fetchProfileAndUpdateLogin(session.user.id);
+          
+          // If no profile found, try to create one from auth user data (simplified)
           if (!profileData && session.user) {
-            console.log('📝 No profile found, creating from auth data...');
+            console.log('📝 No profile found, creating minimal profile...');
             try {
-              const { error: insertError } = await supabase
-                .from('users')
-                .insert({
-                  id: session.user.id,
-                  email: session.user.email || '',
-                  first_name: session.user.user_metadata?.first_name || '',
-                  last_name: session.user.user_metadata?.last_name || '',
-                  phone: session.user.user_metadata?.phone || null,
-                  role: session.user.user_metadata?.role || 'customer',
-                  email_verified: session.user.email_confirmed_at ? true : false,
-                  created_at: new Date().toISOString(),
-                  updated_at: new Date().toISOString(),
-                });
+              const newProfile = {
+                id: session.user.id,
+                email: session.user.email || '',
+                first_name: session.user.user_metadata?.first_name || '',
+                last_name: session.user.user_metadata?.last_name || '',
+                role: 'customer' as const,
+                email_verified: session.user.email_confirmed_at ? true : false,
+              };
               
-              if (!insertError) {
-                // Fetch the newly created profile
-                const newProfile = await fetchUserProfile(session.user.id);
-                setProfile(newProfile);
-              } else {
-                console.error('❌ Error creating profile:', insertError);
+              const { data, error: insertError } = await supabase
+                .from('users')
+                .insert(newProfile)
+                .select()
+                .single();
+                
+              if (!insertError && data) {
+                console.log('✅ Profile created successfully');
+                setProfile(data);
               }
             } catch (error) {
-              console.error('❌ Error in profile creation fallback:', error);
+              console.error('❌ Failed to create profile:', error);
             }
-          } else {
-            setProfile(profileData);
           }
-          
-          // This block is now handled by fetchProfileAndUpdateLogin
-          // try {
-          //   const { error: updateError } = await supabase
-          //     .from('users')
-          //     .update({ last_login_at: new Date().toISOString() })
-          //     .eq('id', session.user.id);
-          //   if (updateError) {
-          //     console.error('❌ Error updating last_login_at:', updateError);
-          //   }
-          // } catch (e) {
-          //   console.error('❌ Exception updating last_login_at:', e);
-          // }
-
         } else if (event === 'TOKEN_REFRESHED' && session?.user) {
           // Only fetch profile if we don't already have it
           if (!profile || profile.id !== session.user.id) {
@@ -324,6 +312,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (error) {
       console.error('Error during sign up:', error);
       return { error };
+    }
+  };
+
+  // Simplified backup sign-in function (in case complex version fails)
+  const signInSimple = async (email: string, password: string) => {
+    try {
+      console.log('🔑 Using simplified sign-in for:', email);
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      console.log('✅ Simple sign-in completed:', { hasError: !!error });
+      return { error };
+    } catch (error) {
+      console.error('❌ Simple sign-in failed:', error);
+      return { error: error instanceof Error ? error : new Error('Login failed') };
     }
   };
 
