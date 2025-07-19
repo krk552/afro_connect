@@ -43,24 +43,55 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   
-  // Fetch user profile from the database
+  // Fetch user profile from the database with timeout
   const fetchUserProfile = async (userId: string) => {
     try {
-      const { data, error } = await supabase
+      // Add timeout to prevent hanging
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Profile fetch timeout')), 10000)
+      );
+
+      const profilePromise = supabase
         .from('users')
-        .select('*')
+        .select('id, email, first_name, last_name, phone, role, email_verified, profile_image_url, metadata, created_at')
         .eq('id', userId)
         .single();
+
+      const { data, error } = await Promise.race([profilePromise, timeoutPromise]) as any;
 
       if (error) {
         console.error('❌ Error fetching profile:', error);
         return null;
       }
 
-      console.log('✅ Profile fetched successfully:', data);
+      console.log('✅ Profile fetched successfully');
       return data;
     } catch (error) {
       console.error('❌ Error fetching profile:', error);
+      return null;
+    }
+  };
+
+  // Optimized function to fetch profile and update last login in parallel
+  const fetchProfileAndUpdateLogin = async (userId: string) => {
+    try {
+      // Run both operations in parallel for better performance
+      const [profileData] = await Promise.allSettled([
+        fetchUserProfile(userId),
+        supabase
+          .from('users')
+          .update({ last_login_at: new Date().toISOString() })
+          .eq('id', userId)
+      ]);
+
+      if (profileData.status === 'fulfilled') {
+        return profileData.value;
+      } else {
+        console.error('❌ Error in parallel operations:', profileData.reason);
+        return null;
+      }
+    } catch (error) {
+      console.error('❌ Error in fetchProfileAndUpdateLogin:', error);
       return null;
     }
   };
@@ -116,33 +147,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         
         if (event === 'SIGNED_IN' && session?.user) {
           console.log('👤 User signed in, fetching profile and updating last_login_at...');
-          const profileData = await fetchUserProfile(session.user.id);
+          const profileData = await fetchProfileAndUpdateLogin(session.user.id);
           setProfile(profileData);
           
-          // Update last_login_at
-          try {
-            const { error: updateError } = await supabase
-              .from('users')
-              .update({ last_login_at: new Date().toISOString() })
-              .eq('id', session.user.id);
-            if (updateError) {
-              console.error('❌ Error updating last_login_at:', updateError);
-            }
-          } catch (e) {
-            console.error('❌ Exception updating last_login_at:', e);
-          }
+          // This block is now handled by fetchProfileAndUpdateLogin
+          // try {
+          //   const { error: updateError } = await supabase
+          //     .from('users')
+          //     .update({ last_login_at: new Date().toISOString() })
+          //     .eq('id', session.user.id);
+          //   if (updateError) {
+          //     console.error('❌ Error updating last_login_at:', updateError);
+          //   }
+          // } catch (e) {
+          //   console.error('❌ Exception updating last_login_at:', e);
+          // }
 
-        } else if (session?.user) {
-          // Handle other events like TOKEN_REFRESHED, USER_UPDATED if needed
-          // For now, just fetch profile if user exists but event is not SIGNED_IN
-          console.log('👤 Session exists or refreshed, fetching profile...');
-          const profileData = await fetchUserProfile(session.user.id);
-          setProfile(profileData);
+        } else if (event === 'TOKEN_REFRESHED' && session?.user) {
+          // Only fetch profile if we don't already have it
+          if (!profile || profile.id !== session.user.id) {
+            console.log('👤 Token refreshed, fetching profile...');
+            const profileData = await fetchUserProfile(session.user.id);
+            setProfile(profileData);
+          }
         } else if (event === 'SIGNED_OUT') {
           console.log('👤 User signed out, clearing profile');
           setProfile(null);
-          // Optionally, redirect to login page on sign out
-          // navigate('/login');
         }
         
         setLoading(false);
@@ -247,12 +277,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signIn = async (email: string, password: string) => {
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      // Add timeout to prevent hanging login
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Login timeout - please try again')), 15000)
+      );
+
+      const loginPromise = supabase.auth.signInWithPassword({
         email,
         password,
       });
 
-      return { error };
+      const result = await Promise.race([loginPromise, timeoutPromise]) as any;
+      return { error: result.error };
     } catch (error) {
       console.error('Error during sign in:', error);
       return { error };

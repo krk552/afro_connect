@@ -22,17 +22,33 @@ const LoginPage = () => {
     setIsLoading(true);
 
     console.log('Attempting login for:', email);
-    const { error } = await signIn(email, password);
+    
+    try {
+      const { error } = await signIn(email, password);
 
-    setIsLoading(false);
-
-    if (error) {
-      console.error('Login page error:', error.message);
-      toast.error(error.message || "Invalid login credentials. Please try again.");
-    } else {
-      console.log('Login page: sign in successful, navigating...');
-      toast.success("Welcome back! You've successfully signed in.");
-      navigate("/");
+      if (error) {
+        console.error('Login page error:', error.message);
+        
+        // Handle specific timeout error
+        if (error.message?.includes('timeout')) {
+          toast.error("Login is taking longer than expected. Please check your connection and try again.");
+        } else if (error.message?.includes('Invalid login credentials')) {
+          toast.error("Invalid email or password. Please check your credentials and try again.");
+        } else if (error.message?.includes('Too many requests')) {
+          toast.error("Too many login attempts. Please wait a moment before trying again.");
+        } else {
+          toast.error(error.message || "Login failed. Please try again.");
+        }
+      } else {
+        console.log('Login page: sign in successful, navigating...');
+        toast.success("Welcome back! You've successfully signed in.");
+        navigate("/");
+      }
+    } catch (error) {
+      console.error('Unexpected login error:', error);
+      toast.error("An unexpected error occurred. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
