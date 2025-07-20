@@ -25,7 +25,7 @@
 5. Copy the API key (starts with `re_`)
 
 ## Step 4: Configure Supabase SMTP
-1. Go to your Supabase dashboard: https://supabase.com/dashboard/project/gvybbjfskvikawpnfhsc
+1. Go to your Supabase dashboard: https://supabase.com/dashboard/project/your-project-id
 2. Navigate to **Authentication > Settings**
 3. Scroll down to **SMTP Settings**
 4. Enable "Enable custom SMTP"

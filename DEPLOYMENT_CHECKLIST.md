@@ -54,7 +54,7 @@ npm run build
 ### **2. Environment Configuration**
 ```bash
 # Production environment variables
-VITE_SUPABASE_URL=https://gvybbjfskvikawpnfhsc.supabase.co
+VITE_SUPABASE_URL=https://your-project.supabase.co
 VITE_SUPABASE_ANON_KEY=your_production_key
 VITE_APP_ENV=production
 ```

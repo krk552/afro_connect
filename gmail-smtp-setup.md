@@ -13,7 +13,7 @@
 5. Copy the 16-character password (no spaces)
 
 ## Step 3: Configure Supabase
-1. Go to: https://supabase.com/dashboard/project/gvybbjfskvikawpnfhsc/auth/settings
+1. Go to: https://supabase.com/dashboard/project/your-project-id/auth/settings
 2. Scroll to "SMTP Settings"
 3. Enable "Enable custom SMTP"
 4. Enter:

@@ -35,10 +35,10 @@ npm install -g supabase
 supabase login
 
 # Link your project
-supabase link --project-ref gvybbjfskvikawpnfhsc
+supabase link --project-ref your-project-id
 
 # Update auth config
-supabase gen types typescript --project-id gvybbjfskvikawpnfhsc
+supabase gen types typescript --project-id your-project-id
 ```
 
 ## Method 4: Direct API Configuration
