@@ -5,8 +5,8 @@ import { Badge } from '@/components/ui/badge';
 import { 
   Bell, 
   X, 
-  CheckCircle, 
-  AlertCircle, 
+  CheckCircle,
+  AlertCircle,
   Info,
   Calendar,
   Star
@@ -80,7 +80,7 @@ const NotificationSystem = () => {
         return <AlertCircle className="w-5 h-5 text-red-600" />;
       case 'warning':
         return <AlertCircle className="w-5 h-5 text-yellow-600" />;
-      default:
+      default: 
         return <Info className="w-5 h-5 text-blue-600" />;
     }
   };
@@ -107,14 +107,14 @@ const NotificationSystem = () => {
         onClick={() => setIsOpen(!isOpen)}
       >
         <Bell className="w-5 h-5" />
-        {unreadCount > 0 && (
-          <Badge 
+          {unreadCount > 0 && (
+            <Badge 
             className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 text-xs flex items-center justify-center bg-red-500"
-          >
+            >
             {unreadCount > 9 ? '9+' : unreadCount}
-          </Badge>
-        )}
-      </Button>
+            </Badge>
+          )}
+        </Button>
 
       {/* Notification Panel */}
       {isOpen && (
@@ -123,33 +123,33 @@ const NotificationSystem = () => {
             <div className="flex items-center justify-between">
               <h3 className="font-semibold text-gray-900">Notifications</h3>
               <div className="flex items-center gap-2">
-                {unreadCount > 0 && (
+              {unreadCount > 0 && (
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={markAllAsRead}
                     className="text-xs text-blue-600 hover:text-blue-700"
                   >
-                    Mark all read
-                  </Button>
-                )}
+                  Mark all read
+                </Button>
+              )}
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => setIsOpen(false)}
                 >
                   <X className="w-4 h-4" />
-                </Button>
+              </Button>
               </div>
-            </div>
           </div>
+        </div>
 
-          <div className="max-h-96 overflow-y-auto">
+        <div className="max-h-96 overflow-y-auto">
             {notifications.length === 0 ? (
               <div className="p-6 text-center">
                 <Bell className="w-8 h-8 text-gray-400 mx-auto mb-2" />
                 <p className="text-gray-500 text-sm">No notifications</p>
-              </div>
+            </div>
             ) : (
               <div className="divide-y">
                 {notifications.map((notification) => (
@@ -181,13 +181,13 @@ const NotificationSystem = () => {
                           <div className="flex items-center gap-1 ml-2">
                             {!notification.isRead && (
                               <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                            )}
+                              )}
                             <Button
                               variant="ghost"
                               size="sm"
                               onClick={() => removeNotification(notification.id)}
                               className="h-6 w-6 p-0 text-gray-400 hover:text-gray-600"
-                            >
+                              >
                               <X className="w-3 h-3" />
                             </Button>
                           </div>
@@ -207,11 +207,11 @@ const NotificationSystem = () => {
                     </div>
                   </div>
                 ))}
-              </div>
-            )}
-          </div>
+            </div>
+          )}
+        </div>
 
-          {notifications.length > 0 && (
+        {notifications.length > 0 && (
             <div className="p-3 border-t bg-gray-50">
               <Button
                 variant="ghost"
@@ -224,9 +224,9 @@ const NotificationSystem = () => {
                 }}
               >
                 View all notifications
-              </Button>
-            </div>
-          )}
+            </Button>
+          </div>
+        )}
         </div>
       )}
 

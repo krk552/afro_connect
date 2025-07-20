@@ -53,7 +53,7 @@ const LoginPage = () => {
         toast.error('Invalid email or password');
       } else if (error.message?.includes('Email not confirmed')) {
         toast.error('Please check your email and confirm your account first');
-      } else {
+    } else {
         toast.error(error.message || 'Failed to sign in');
       }
     } finally {
@@ -65,17 +65,17 @@ const LoginPage = () => {
     <div className="min-h-screen bg-gradient-to-br from-afro-orange/5 via-white to-afro-blue/5 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Header */}
-        <div className="text-center mb-8">
+      <div className="text-center mb-8">
           <div className="w-16 h-16 bg-afro-orange/10 rounded-full flex items-center justify-center mx-auto mb-4">
             <LogIn className="w-8 h-8 text-afro-orange" />
-          </div>
+        </div>
           <h1 className="text-2xl font-bold text-gray-900 mb-2">
             Welcome back
-          </h1>
+        </h1>
           <p className="text-gray-600">
             Sign in to your Makna account
           </p>
-        </div>
+      </div>
 
         {/* Login Form */}
         <Card className="border-0 shadow-lg">
@@ -88,19 +88,19 @@ const LoginPage = () => {
                 </Label>
                 <div className="relative mt-1">
                   <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                  <Input
-                    id="email"
+            <Input
+              id="email"
                     name="email"
-                    type="email"
+              type="email"
                     value={formData.email}
                     onChange={handleInputChange}
                     placeholder="john@example.com"
                     className="pl-10"
-                    required
-                  />
-                </div>
-              </div>
-
+              required
+            />
+          </div>
+        </div>
+        
               {/* Password */}
               <div>
                 <div className="flex items-center justify-between">
@@ -111,42 +111,42 @@ const LoginPage = () => {
                     to="/forgot-password" 
                     className="text-sm text-afro-orange hover:text-afro-orange/80"
                   >
-                    Forgot password?
-                  </Link>
-                </div>
+              Forgot password?
+            </Link>
+          </div>
                 <div className="relative mt-1">
-                  <Input
-                    id="password"
+            <Input
+              id="password"
                     name="password"
                     type={showPassword ? 'text' : 'password'}
                     value={formData.password}
                     onChange={handleInputChange}
                     placeholder="Enter your password"
                     className="pr-10"
-                    required
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
+              required
+            />
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
                     className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
+              onClick={() => setShowPassword(!showPassword)}
+            >
                     {showPassword ? (
                       <EyeOff className="w-4 h-4 text-gray-400" />
                     ) : (
                       <Eye className="w-4 h-4 text-gray-400" />
                     )}
-                  </Button>
-                </div>
-              </div>
+            </Button>
+          </div>
+        </div>
 
               {/* Submit */}
-              <Button 
-                type="submit" 
+        <Button 
+          type="submit" 
                 className="w-full bg-afro-orange hover:bg-afro-orange/90 mt-6"
                 disabled={loading}
-              >
+        >
                 {loading ? (
                   'Signing you in...'
                 ) : (
@@ -154,17 +154,17 @@ const LoginPage = () => {
                     Sign In
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </>
-                )}
-              </Button>
-            </form>
+          )}
+        </Button>
+      </form>
 
             {/* Divider */}
             <div className="relative my-6">
               <Separator />
               <div className="absolute inset-0 flex justify-center">
                 <span className="bg-white px-2 text-sm text-gray-500">or</span>
-              </div>
-            </div>
+          </div>
+        </div>
 
             {/* Business Owner Link */}
             <div className="text-center">
@@ -178,8 +178,8 @@ const LoginPage = () => {
               >
                 <Sparkles className="w-4 h-4 mr-2" />
                 Business Login / Register
-              </Button>
-            </div>
+          </Button>
+        </div>
           </CardContent>
         </Card>
 
@@ -192,9 +192,9 @@ const LoginPage = () => {
               className="text-afro-orange hover:text-afro-orange/80 font-medium"
             >
               Create account
-            </Link>
-          </p>
-        </div>
+          </Link>
+        </p>
+      </div>
 
         {/* Quick Access for New Users */}
         <div className="mt-6 p-4 bg-green-50 rounded-lg border border-green-200 text-center">

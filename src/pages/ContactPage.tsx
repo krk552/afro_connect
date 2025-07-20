@@ -86,7 +86,7 @@ const ContactPage = () => {
     }
 
     setIsSubmitting(true);
-
+    
     try {
       // Simulate form submission - in real app, would send to backend
       await new Promise(resolve => setTimeout(resolve, 1000));
@@ -108,7 +108,7 @@ const ContactPage = () => {
 
   return (
     <div className="pt-16 pb-24">
-      <div className="container mx-auto px-4">
+        <div className="container mx-auto px-4">
         {/* Header */}
         <div className="text-center mb-16">
           <Badge className="bg-afro-orange/10 text-afro-orange border-afro-orange/20 mb-6">
@@ -168,7 +168,7 @@ const ContactPage = () => {
                 
                 <div className="flex items-start gap-3">
                   <Clock className="w-5 h-5 text-blue-600 mt-1" />
-                  <div>
+              <div>
                     <h3 className="font-semibold text-gray-900 mb-1">Response Time</h3>
                     <p className="text-sm text-gray-600">Within 24 hours</p>
                   </div>
@@ -210,40 +210,40 @@ const ContactPage = () => {
                       <Label htmlFor="name" className="text-sm font-medium text-gray-700">
                         Your Name *
                       </Label>
-                      <Input
-                        id="name"
-                        name="name"
+                    <Input 
+                      id="name"
+                      name="name"
                         type="text"
-                        value={formData.name}
+                      value={formData.name}
                         onChange={handleInputChange}
                         placeholder="John Doe"
                         className="mt-1"
-                        required
-                      />
-                    </div>
-                    <div>
+                      required
+                    />
+                  </div>
+                  <div>
                       <Label htmlFor="email" className="text-sm font-medium text-gray-700">
                         Email Address *
                       </Label>
-                      <Input
-                        id="email"
-                        name="email"
-                        type="email"
-                        value={formData.email}
+                    <Input 
+                      id="email"
+                      name="email"
+                      type="email"
+                      value={formData.email}
                         onChange={handleInputChange}
                         placeholder="john@example.com"
                         className="mt-1"
-                        required
-                      />
+                      required
+                    />
                     </div>
                   </div>
-
+                  
                   {/* Subject */}
                   <div>
                     <Label htmlFor="subject" className="text-sm font-medium text-gray-700">
                       Subject
                     </Label>
-                    <Input
+                    <Input 
                       id="subject"
                       name="subject"
                       type="text"
@@ -253,13 +253,13 @@ const ContactPage = () => {
                       className="mt-1"
                     />
                   </div>
-
+                  
                   {/* Message */}
                   <div>
                     <Label htmlFor="message" className="text-sm font-medium text-gray-700">
                       Message *
                     </Label>
-                    <Textarea
+                    <Textarea 
                       id="message"
                       name="message"
                       value={formData.message}
@@ -270,7 +270,7 @@ const ContactPage = () => {
                       required
                     />
                   </div>
-
+                  
                   {/* Submit */}
                   <Button 
                     type="submit" 
@@ -287,8 +287,8 @@ const ContactPage = () => {
                     )}
                   </Button>
                 </form>
-              </CardContent>
-            </Card>
+                    </CardContent>
+                  </Card>
           </div>
         </div>
 
@@ -297,9 +297,9 @@ const ContactPage = () => {
           <h2 className="text-2xl font-bold text-gray-900 mb-4">Frequently Asked Questions</h2>
           <p className="text-gray-600 max-w-2xl mx-auto">
             Quick answers to common questions about Makna
-          </p>
-        </div>
-
+            </p>
+          </div>
+          
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {quickHelp.map((item, index) => (
             <Card key={index} className="border-0 shadow-sm hover:shadow-md transition-shadow">

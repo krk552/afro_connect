@@ -8,8 +8,8 @@ import { Separator } from '@/components/ui/separator';
 import { 
   Search, 
   MapPin, 
-  Star, 
-  Heart, 
+  Star,
+  Heart,
   Filter,
   Grid,
   List,
@@ -32,7 +32,7 @@ const BusinessListing = () => {
   const [selectedCategory, setSelectedCategory] = useState(searchParams.get('category') || '');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [showFilters, setShowFilters] = useState(false);
-
+  
   // Get search parameters
   const category = searchParams.get('category') || '';
   const city = searchParams.get('city') || '';
@@ -119,8 +119,8 @@ const BusinessListing = () => {
             </Button>
           </div>
         </div>
-      </div>
-    );
+        </div>
+  );
   }
 
   return (
@@ -164,9 +164,9 @@ const BusinessListing = () => {
             <Button type="submit" className="bg-afro-orange hover:bg-afro-orange/90">
               Search
             </Button>
-            <Button
+            <Button 
               type="button"
-              variant="outline"
+              variant="outline" 
               onClick={() => setShowFilters(!showFilters)}
             >
               <Filter className="w-4 h-4 mr-2" />
@@ -229,7 +229,7 @@ const BusinessListing = () => {
 
           {/* View Mode Toggle */}
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2">
               <Button
                 variant={viewMode === 'grid' ? 'default' : 'outline'}
                 size="sm"
@@ -294,8 +294,8 @@ const BusinessListing = () => {
                       ) : (
                         <div className="text-gray-400 text-2xl">🏢</div>
                       )}
-                    </div>
-
+              </div>
+              
                     {/* Business Info */}
                     <div className={viewMode === 'list' ? 'flex-1' : ''}>
                       <div className="flex items-start justify-between mb-2">
@@ -320,14 +320,14 @@ const BusinessListing = () => {
                         >
                           <Heart className={`w-4 h-4 ${isFavorite(business.id) ? 'fill-red-600' : ''}`} />
                         </Button>
-                      </div>
-
+              </div>
+              
                       <div className="space-y-1 text-sm text-gray-600">
                         <div className="flex items-center gap-1">
                           <MapPin className="w-3 h-3" />
                           <span>{business.city}, {business.region}</span>
-                        </div>
-                        
+            </div>
+            
                         {business.average_rating && (
                           <div className="flex items-center gap-1">
                             <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" />
@@ -335,8 +335,8 @@ const BusinessListing = () => {
                             {business.review_count && (
                               <span>({business.review_count} reviews)</span>
                             )}
-                          </div>
-                        )}
+            </div>
+        )}
 
                         {business.is_verified && (
                           <div className="flex items-center gap-1 text-green-600">
@@ -344,7 +344,7 @@ const BusinessListing = () => {
                             <span className="text-xs">Verified</span>
                           </div>
                         )}
-                      </div>
+              </div>
 
                       {business.description && (
                         <p className="text-sm text-gray-600 mt-2 line-clamp-2">
@@ -374,11 +374,11 @@ const BusinessListing = () => {
                             Call
                           </Button>
                         )}
-                      </div>
-                    </div>
-                  </div>
+          </div>
+              </div>
+            </div>
                 </CardContent>
-              </Card>
+          </Card>
             ))}
           </div>
         )}

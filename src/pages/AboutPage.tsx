@@ -65,7 +65,7 @@ const AboutPage = () => {
 
   return (
     <div className="pt-16 pb-24">
-      <div className="container mx-auto px-4">
+        <div className="container mx-auto px-4">
         {/* Hero Section */}
         <div className="text-center mb-16">
           <Badge className="bg-afro-orange/10 text-afro-orange border-afro-orange/20 mb-6">
@@ -113,24 +113,24 @@ const AboutPage = () => {
               </p>
             </CardContent>
           </Card>
-        </div>
-
+            </div>
+            
         {/* Our Values */}
         <div className="mb-16">
           <div className="text-center mb-12">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">What We Stand For</h2>
             <p className="text-gray-600 max-w-2xl mx-auto">
               These values guide every decision we make as we build Makna
-            </p>
-          </div>
-
+              </p>
+            </div>
+            
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {values.map((value, index) => (
               <Card key={index} className="border-0 shadow-md hover:shadow-lg transition-shadow">
                 <CardContent className="p-6 text-center">
                   <div className="w-12 h-12 bg-afro-orange/10 rounded-lg flex items-center justify-center mx-auto mb-4">
                     <value.icon className="w-6 h-6 text-afro-orange" />
-                  </div>
+              </div>
                   <h3 className="font-semibold text-gray-900 mb-2">{value.title}</h3>
                   <p className="text-sm text-gray-600">{value.description}</p>
                 </CardContent>
@@ -171,7 +171,7 @@ const AboutPage = () => {
                   {milestone.status === 'future' && (
                     <span className="text-white text-xs font-bold">{index + 1}</span>
                   )}
-                </div>
+        </div>
                 
                 <div className="flex-1">
                   <h3 className="font-semibold text-gray-900 mb-1">{milestone.title}</h3>
@@ -193,7 +193,7 @@ const AboutPage = () => {
               </div>
             ))}
           </div>
-        </div>
+              </div>
 
         {/* Why Namibia Needs This */}
         <Card className="border-0 shadow-lg bg-gradient-to-br from-gray-50 to-white mb-16">
@@ -203,7 +203,7 @@ const AboutPage = () => {
               <p className="text-gray-600 max-w-2xl mx-auto">
                 We see a huge opportunity to support local businesses and bring communities together
               </p>
-            </div>
+              </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <div className="text-center">
@@ -268,7 +268,7 @@ const AboutPage = () => {
             >
               <Mail className="w-4 h-4 mr-2" />
               Get in Touch
-            </Button>
+                </Button>
           </div>
         </div>
       </div>

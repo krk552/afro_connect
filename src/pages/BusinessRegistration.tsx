@@ -52,7 +52,7 @@ const BusinessRegistration = () => {
       [name]: value
     }));
   };
-
+  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -108,7 +108,7 @@ const BusinessRegistration = () => {
     }
   };
 
-  return (
+        return (
     <div className="min-h-screen bg-gradient-to-br from-afro-orange/5 via-white to-afro-blue/5">
       {/* Header */}
       <div className="bg-white border-b">
@@ -142,7 +142,7 @@ const BusinessRegistration = () => {
                 who need your services. Start growing your business today.
               </p>
             </div>
-
+            
             {/* Benefits */}
             <div className="space-y-4">
               {benefits.map((benefit, index) => (
@@ -156,8 +156,8 @@ const BusinessRegistration = () => {
                   </div>
                 </div>
               ))}
-            </div>
-
+                </div>
+                
             {/* Platform Benefits */}
             <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-6 border border-blue-200">
               <h3 className="font-semibold text-gray-900 mb-3">✨ Platform Benefits</h3>
@@ -165,11 +165,11 @@ const BusinessRegistration = () => {
                 <div className="flex items-center gap-2">
                   <CheckCircle className="w-4 h-4 text-blue-600" />
                   <span>Free business profile creation</span>
-                </div>
+                        </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle className="w-4 h-4 text-blue-600" />
                   <span>Easy booking management</span>
-                </div>
+                        </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle className="w-4 h-4 text-blue-600" />
                   <span>Customer reviews and ratings</span>
@@ -193,26 +193,26 @@ const BusinessRegistration = () => {
                   <p className="text-gray-600 text-sm">
                     Takes less than 2 minutes
                   </p>
-                </div>
-
+            </div>
+            
                 <form onSubmit={handleSubmit} className="space-y-4">
                   {/* Business Name */}
                   <div>
                     <Label htmlFor="businessName" className="text-sm font-medium text-gray-700">
                       Business Name *
                     </Label>
-                    <Input
+                  <Input
                       id="businessName"
                       name="businessName"
                       type="text"
                       value={formData.businessName}
-                      onChange={handleInputChange}
+                    onChange={handleInputChange}
                       placeholder="e.g. Maria's Hair Salon"
                       className="mt-1"
-                      required
-                    />
-                  </div>
-
+                    required
+                  />
+                </div>
+                
                   {/* Category */}
                   <div>
                     <Label htmlFor="category" className="text-sm font-medium text-gray-700">
@@ -244,7 +244,7 @@ const BusinessRegistration = () => {
                       <select
                         id="city"
                         name="city"
-                        value={formData.city}
+                    value={formData.city} 
                         onChange={handleInputChange}
                         className="mt-1 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:border-afro-orange focus:outline-none focus:ring-1 focus:ring-afro-orange"
                         required
@@ -269,42 +269,42 @@ const BusinessRegistration = () => {
                         placeholder="Street address"
                         className="mt-1"
                       />
-                    </div>
-                  </div>
-
+                </div>
+              </div>
+              
                   {/* Contact */}
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <Label htmlFor="phone" className="text-sm font-medium text-gray-700">
                         Phone Number *
                       </Label>
-                      <Input
-                        id="phone"
-                        name="phone"
+                  <Input
+                    id="phone"
+                    name="phone"
                         type="tel"
-                        value={formData.phone}
-                        onChange={handleInputChange}
+                    value={formData.phone}
+                    onChange={handleInputChange}
                         placeholder="+264 81 123 4567"
                         className="mt-1"
-                        required
-                      />
-                    </div>
+                    required
+                  />
+                </div>
                     <div>
                       <Label htmlFor="email" className="text-sm font-medium text-gray-700">
                         Email
                       </Label>
-                      <Input
-                        id="email"
-                        name="email"
-                        type="email"
-                        value={formData.email}
-                        onChange={handleInputChange}
+                  <Input
+                    id="email"
+                    name="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={handleInputChange}
                         placeholder="your@business.com"
                         className="mt-1"
-                      />
-                    </div>
-                  </div>
-
+                  />
+                </div>
+              </div>
+              
                   {/* Description */}
                   <div>
                     <Label htmlFor="description" className="text-sm font-medium text-gray-700">
@@ -314,13 +314,13 @@ const BusinessRegistration = () => {
                       id="description"
                       name="description"
                       value={formData.description}
-                      onChange={handleInputChange}
+                  onChange={handleInputChange}
                       placeholder="Tell customers about your services..."
                       rows={3}
                       className="mt-1"
-                    />
-                  </div>
-
+                />
+              </div>
+              
                   {/* Submit */}
                   <Button 
                     type="submit" 
@@ -333,8 +333,8 @@ const BusinessRegistration = () => {
                       <>
                         Register My Business
                         <ArrowRight className="w-4 h-4 ml-2" />
-                      </>
-                    )}
+                        </>
+                      )}
                   </Button>
 
                   <p className="text-xs text-gray-500 text-center mt-4">

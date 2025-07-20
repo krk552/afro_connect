@@ -83,7 +83,7 @@ const BookingPage = () => {
   useEffect(() => {
     if (business && (business as BusinessWithDetails)?.services && (business as BusinessWithDetails).services.length > 0) {
       setSelectedService((business as BusinessWithDetails).services[0].id);
-    }
+      }
   }, [business]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -144,7 +144,7 @@ const BookingPage = () => {
           <div className="text-center py-12">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-afro-orange mx-auto mb-4"></div>
             <p className="text-gray-600">Loading business details...</p>
-          </div>
+      </div>
         </div>
       </div>
     );
@@ -171,16 +171,16 @@ const BookingPage = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Booking Form */}
+        {/* Booking Form */}
           <div className="lg:col-span-2">
             <Card>
               <CardHeader>
                 <CardTitle>Booking Details</CardTitle>
               </CardHeader>
               <CardContent>
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  {/* Service Selection */}
-                  <div>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Service Selection */}
+            <div>
                     <Label htmlFor="service" className="text-sm font-medium text-gray-700">
                       Select Service *
                     </Label>
@@ -206,13 +206,13 @@ const BookingPage = () => {
                               </div>
                               <div className="text-sm text-gray-500">
                                 {service.duration_minutes} min
-                              </div>
-                            </div>
+                      </div>
+            </div>
                           </div>
                         </div>
-                      ))}
+                  ))}
                     </div>
-                  </div>
+                </div>
 
                   {/* Date and Time Selection */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -250,62 +250,62 @@ const BookingPage = () => {
                   <div>
                     <h3 className="text-lg font-medium text-gray-900 mb-4">Contact Information</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
+              <div>
                         <Label htmlFor="name" className="text-sm font-medium text-gray-700">
                           Full Name *
                         </Label>
-                        <Input
-                          id="name"
+                <Input
+                  id="name"
                           name="name"
                           value={formData.name}
                           onChange={handleInputChange}
                           className="mt-1"
-                          required
-                        />
-                      </div>
-                      <div>
+                  required
+                />
+              </div>
+              <div>
                         <Label htmlFor="phone" className="text-sm font-medium text-gray-700">
                           Phone Number *
                         </Label>
-                        <Input
-                          id="phone"
+                <Input
+                  id="phone"
                           name="phone"
                           value={formData.phone}
                           onChange={handleInputChange}
                           placeholder="+264 81 123 4567"
                           className="mt-1"
-                          required
-                        />
-                      </div>
+                  required
+                />
+              </div>
                     </div>
                     <div className="mt-4">
                       <Label htmlFor="email" className="text-sm font-medium text-gray-700">
                         Email Address
                       </Label>
-                      <Input
-                        id="email"
+                <Input
+                  id="email"
                         name="email"
-                        type="email"
+                  type="email"
                         value={formData.email}
                         onChange={handleInputChange}
                         className="mt-1"
                       />
                     </div>
-                  </div>
-
+              </div>
+              
                   {/* Notes */}
-                  <div>
+              <div>
                     <Label htmlFor="notes" className="text-sm font-medium text-gray-700">
                       Special Requests or Notes
                     </Label>
-                    <Textarea
-                      id="notes"
-                      value={notes}
-                      onChange={(e) => setNotes(e.target.value)}
+                <Textarea
+                    id="notes"
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
                       placeholder="Any special requests or additional information..."
                       className="mt-1"
-                      rows={3}
-                    />
+                  rows={3}
+                  />
                   </div>
 
                   {/* Submit Button */}
@@ -355,8 +355,8 @@ const BookingPage = () => {
                       <span className="text-sm text-gray-600">{business.email}</span>
                     </div>
                   )}
-                </div>
-
+              </div>
+              
                 {business.categories && (
                   <div>
                     <Badge variant="outline" className="text-xs">

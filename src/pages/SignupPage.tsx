@@ -65,7 +65,7 @@ const SignupPage = () => {
     }
   };
 
-  return (
+    return (
     <div className="min-h-screen bg-gradient-to-br from-afro-orange/5 via-white to-afro-blue/5 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Header */}
@@ -91,33 +91,33 @@ const SignupPage = () => {
                   <Label htmlFor="firstName" className="text-sm font-medium text-gray-700">
                     First name
                   </Label>
-                  <Input
-                    id="firstName"
-                    name="firstName"
+              <Input
+                id="firstName"
+                name="firstName"
                     type="text"
                     value={formData.firstName}
                     onChange={handleInputChange}
-                    placeholder="John"
+                placeholder="John"
                     className="mt-1"
-                    required
-                  />
-                </div>
+                required
+              />
+            </div>
                 <div>
                   <Label htmlFor="lastName" className="text-sm font-medium text-gray-700">
                     Last name
                   </Label>
-                  <Input
-                    id="lastName"
-                    name="lastName"
+              <Input
+                id="lastName"
+                name="lastName"
                     type="text"
                     value={formData.lastName}
                     onChange={handleInputChange}
-                    placeholder="Doe"
+                placeholder="Doe"
                     className="mt-1"
-                    required
-                  />
-                </div>
-              </div>
+                required
+              />
+          </div>
+        </div>
 
               {/* Email */}
               <div>
@@ -126,54 +126,54 @@ const SignupPage = () => {
                 </Label>
                 <div className="relative mt-1">
                   <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                  <Input
-                    id="email"
-                    name="email"
-                    type="email"
-                    value={formData.email}
+            <Input
+              id="email"
+              name="email"
+              type="email"
+              value={formData.email}
                     onChange={handleInputChange}
                     placeholder="john@example.com"
                     className="pl-10"
-                    required
-                  />
-                </div>
-              </div>
-
+              required
+            />
+          </div>
+        </div>
+        
               {/* Password */}
               <div>
                 <Label htmlFor="password" className="text-sm font-medium text-gray-700">
                   Password
                 </Label>
                 <div className="relative mt-1">
-                  <Input
-                    id="password"
-                    name="password"
+            <Input
+              id="password"
+              name="password"
                     type={showPassword ? 'text' : 'password'}
-                    value={formData.password}
+              value={formData.password}
                     onChange={handleInputChange}
                     placeholder="At least 6 characters"
                     className="pr-10"
-                    required
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
+              required
+            />
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
                     className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
+              onClick={() => setShowPassword(!showPassword)}
+            >
                     {showPassword ? (
                       <EyeOff className="w-4 h-4 text-gray-400" />
                     ) : (
                       <Eye className="w-4 h-4 text-gray-400" />
                     )}
-                  </Button>
-                </div>
+            </Button>
+          </div>
               </div>
 
               {/* Submit */}
-              <Button 
-                type="submit" 
+        <Button 
+          type="submit" 
                 className="w-full bg-afro-orange hover:bg-afro-orange/90 mt-6"
                 disabled={loading}
               >
@@ -181,20 +181,20 @@ const SignupPage = () => {
                   'Creating your account...'
                 ) : (
                   <>
-                    Create Account
+              Create Account
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </>
-                )}
-              </Button>
-            </form>
+          )}
+        </Button>
+      </form>
 
             {/* Divider */}
             <div className="relative my-6">
               <Separator />
               <div className="absolute inset-0 flex justify-center">
                 <span className="bg-white px-2 text-sm text-gray-500">or</span>
-              </div>
-            </div>
+          </div>
+        </div>
 
             {/* Business Owner Link */}
             <div className="text-center">
@@ -208,8 +208,8 @@ const SignupPage = () => {
               >
                 <Sparkles className="w-4 h-4 mr-2" />
                 Register Your Business
-              </Button>
-            </div>
+          </Button>
+        </div>
           </CardContent>
         </Card>
 
@@ -221,10 +221,10 @@ const SignupPage = () => {
               to="/login" 
               className="text-afro-orange hover:text-afro-orange/80 font-medium"
             >
-              Sign in
-            </Link>
-          </p>
-        </div>
+            Sign in
+          </Link>
+        </p>
+      </div>
 
         {/* Welcome Message */}
         <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200 text-center">

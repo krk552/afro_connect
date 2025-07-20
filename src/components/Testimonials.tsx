@@ -123,7 +123,7 @@ const Testimonials = () => {
           <p className="text-gray-600 mb-8 max-w-2xl mx-auto">
             Help us build Namibia's most trusted local business community. Whether you're a business owner or customer, 
             you have a role to play in our success.
-          </p>
+              </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button 

@@ -110,8 +110,8 @@ const UserProfile = () => {
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">My Profile</h1>
           <p className="text-gray-600">Manage your account and preferences</p>
-        </div>
-
+                    </div>
+                    
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Profile Information */}
           <div className="lg:col-span-2">
@@ -123,14 +123,14 @@ const UserProfile = () => {
                     Personal Information
                   </CardTitle>
                   {!isEditing ? (
-                    <Button 
-                      variant="outline" 
+                        <Button 
+                          variant="outline" 
                       size="sm"
-                      onClick={() => setIsEditing(true)}
-                    >
+                          onClick={() => setIsEditing(true)}
+                        >
                       <Edit className="w-4 h-4 mr-2" />
                       Edit
-                    </Button>
+                        </Button>
                   ) : (
                     <div className="flex gap-2">
                       <Button 
@@ -143,26 +143,26 @@ const UserProfile = () => {
                       </Button>
                       <Button 
                         variant="outline" 
-                        size="sm"
+                        size="sm" 
                         onClick={() => setIsEditing(false)}
                       >
                         <X className="w-4 h-4" />
                       </Button>
                     </div>
                   )}
-                </div>
+                    </div>
               </CardHeader>
               <CardContent className="space-y-6">
                 {/* Name */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="firstName" className="text-sm font-medium text-gray-700">
                       First Name
                     </Label>
                     {isEditing ? (
-                      <Input
-                        id="firstName"
-                        name="firstName"
+                        <Input
+                          id="firstName"
+                          name="firstName"
                         value={formData.firstName}
                         onChange={handleInputChange}
                         className="mt-1"
@@ -170,15 +170,15 @@ const UserProfile = () => {
                     ) : (
                       <p className="mt-1 text-gray-900">{profile.first_name || 'Not set'}</p>
                     )}
-                  </div>
+                      </div>
                   <div>
                     <Label htmlFor="lastName" className="text-sm font-medium text-gray-700">
                       Last Name
                     </Label>
                     {isEditing ? (
-                      <Input
-                        id="lastName"
-                        name="lastName"
+                        <Input
+                          id="lastName"
+                          name="lastName"
                         value={formData.lastName}
                         onChange={handleInputChange}
                         className="mt-1"
@@ -187,7 +187,7 @@ const UserProfile = () => {
                       <p className="mt-1 text-gray-900">{profile.last_name || 'Not set'}</p>
                     )}
                   </div>
-                </div>
+                      </div>
 
                 {/* Contact Information */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -196,15 +196,15 @@ const UserProfile = () => {
                       Email Address
                     </Label>
                     <p className="mt-1 text-gray-900">{user.email}</p>
-                  </div>
+                      </div>
                   <div>
                     <Label htmlFor="phone" className="text-sm font-medium text-gray-700">
                       Phone Number
                     </Label>
                     {isEditing ? (
-                      <Input
-                        id="phone"
-                        name="phone"
+                        <Input
+                          id="phone"
+                          name="phone"
                         value={formData.phone}
                         onChange={handleInputChange}
                         placeholder="+264 81 123 4567"
@@ -214,7 +214,7 @@ const UserProfile = () => {
                       <p className="mt-1 text-gray-900">{profile.phone || 'Not set'}</p>
                     )}
                   </div>
-                </div>
+                      </div>
 
                 {/* Location */}
                 <div>
@@ -222,9 +222,9 @@ const UserProfile = () => {
                     Location
                   </Label>
                   {isEditing ? (
-                    <Input
-                      id="location"
-                      name="location"
+                        <Input
+                          id="location"
+                          name="location"
                       value={formData.location}
                       onChange={handleInputChange}
                       placeholder="Windhoek"
@@ -251,19 +251,19 @@ const UserProfile = () => {
                     <p className="mt-1 text-gray-900">
                       {profile.created_at ? new Date(profile.created_at).toLocaleDateString() : 'Unknown'}
                     </p>
+                    </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+                </CardContent>
+              </Card>
+                      </div>
 
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Quick Actions */}
-            <Card>
-              <CardHeader>
+              <Card>
+                <CardHeader>
                 <CardTitle className="text-lg">Quick Actions</CardTitle>
-              </CardHeader>
+                </CardHeader>
               <CardContent className="space-y-3">
                 <Button 
                   variant="outline" 
@@ -280,7 +280,7 @@ const UserProfile = () => {
                 >
                   <Mail className="w-4 h-4 mr-2" />
                   Contact Support
-                </Button>
+                      </Button>
                 <Button 
                   variant="outline" 
                   className="w-full justify-start text-red-600 hover:text-red-700"
@@ -288,40 +288,40 @@ const UserProfile = () => {
                 >
                   <LogOut className="w-4 h-4 mr-2" />
                   Sign Out
-                </Button>
-              </CardContent>
-            </Card>
-
+                      </Button>
+                </CardContent>
+              </Card>
+            
             {/* Account Stats */}
-            <Card>
-              <CardHeader>
+              <Card>
+                <CardHeader>
                 <CardTitle className="text-lg">Account Overview</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Calendar className="w-4 h-4 text-gray-500" />
                     <span className="text-sm text-gray-600">Bookings</span>
                   </div>
                   <span className="text-sm font-medium">0</span>
                 </div>
-                <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Heart className="w-4 h-4 text-gray-500" />
                     <span className="text-sm text-gray-600">Favorites</span>
                   </div>
                   <span className="text-sm font-medium">0</span>
                 </div>
-                <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Star className="w-4 h-4 text-gray-500" />
                     <span className="text-sm text-gray-600">Reviews</span>
                   </div>
                   <span className="text-sm font-medium">0</span>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+                  </div>
+                </CardContent>
+              </Card>
+                  </div>
         </div>
       </div>
     </div>

@@ -53,10 +53,10 @@ const BusinessDetails = () => {
             <h2 className="text-2xl font-bold text-gray-900 mb-2">Business Not Found</h2>
             <p className="text-gray-600 mb-6">
               {error || "The business you're looking for doesn't exist or has been removed."}
-            </p>
+          </p>
             <Button onClick={() => navigate('/')}>
               Go Home
-            </Button>
+          </Button>
           </div>
         </div>
       </div>
@@ -126,8 +126,8 @@ const BusinessDetails = () => {
                           Verified
                         </Badge>
                       )}
-                    </div>
-                    
+      </div>
+
                     {business.categories && (
                       <Badge variant="outline" className="mb-3">
                         {business.categories.name}
@@ -146,33 +146,33 @@ const BusinessDetails = () => {
                           {business.review_count && (
                             <span>({business.review_count} reviews)</span>
                           )}
-                        </div>
-                      )}
-                    </div>
+                </div>
+                )}
+              </div>
 
                     {business.description && (
                       <p className="text-gray-700 leading-relaxed">
                         {business.description}
                       </p>
                     )}
-                  </div>
+            </div>
 
                   <div className="flex flex-col gap-2 ml-4">
-                    <Button 
-                      variant="outline" 
+              <Button
+                variant="outline"
                       size="sm"
                       onClick={handleFavorite}
                       className={isFavorite(business.id) ? 'text-red-600 border-red-200' : ''}
-                    >
+              >
                       <Heart className={`w-4 h-4 mr-2 ${isFavorite(business.id) ? 'fill-red-600' : ''}`} />
                       {isFavorite(business.id) ? 'Saved' : 'Save'}
-                    </Button>
-                  </div>
-                </div>
+              </Button>
+            </div>
+          </div>
 
                 {/* Action Buttons */}
                 <div className="flex flex-col sm:flex-row gap-3">
-                  <Button 
+                  <Button
                     className="bg-afro-orange hover:bg-afro-orange/90 flex-1"
                     onClick={handleBookNow}
                   >
@@ -188,7 +188,7 @@ const BusinessDetails = () => {
                 </div>
               </CardContent>
             </Card>
-
+          
             {/* Tabs */}
             <Card>
               <CardHeader>
@@ -229,7 +229,7 @@ const BusinessDetails = () => {
                 {selectedTab === 'overview' && (
                   <div className="space-y-6">
                     {/* Contact Information */}
-                    <div>
+                      <div>
                       <h3 className="text-lg font-semibold text-gray-900 mb-4">Contact Information</h3>
                       <div className="space-y-3">
                         {business.street_address && (
@@ -263,7 +263,7 @@ const BusinessDetails = () => {
                             >
                               Visit Website
                             </a>
-                          </div>
+                        </div>
                         )}
                       </div>
                     </div>
@@ -278,7 +278,7 @@ const BusinessDetails = () => {
                             <span className="text-gray-900">
                               {hour.is_closed ? 'Closed' : `${formatTime(hour.open_time)} - ${formatTime(hour.close_time)}`}
                             </span>
-                          </div>
+                        </div>
                         ))}
                         <button
                           onClick={() => setSelectedTab('hours')}
@@ -314,12 +314,12 @@ const BusinessDetails = () => {
                                 onClick={() => navigate(`/booking/${businessId}?service=${service.id}`)}
                               >
                                 Book Now
-                              </Button>
-                            </div>
-                          </div>
-                        ))}
+                        </Button>
                       </div>
-                    ) : (
+                    </div>
+                  ))}
+                </div>
+              ) : (
                       <div className="text-center py-8">
                         <p className="text-gray-500">No services available yet.</p>
                       </div>
@@ -340,12 +340,12 @@ const BusinessDetails = () => {
                         </div>
                       ))}
                     </div>
-                  </div>
-                )}
+                </div>
+              )}
               </CardContent>
             </Card>
           </div>
-
+          
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Quick Actions */}
@@ -365,8 +365,8 @@ const BusinessDetails = () => {
                   <Button variant="outline" className="w-full">
                     <Phone className="w-4 h-4 mr-2" />
                     Call Business
-                  </Button>
-                )}
+                    </Button>
+                  )}
                 <Button 
                   variant="outline" 
                   className="w-full"
@@ -389,13 +389,13 @@ const BusinessDetails = () => {
                   <Badge variant={business.status === 'active' ? 'default' : 'secondary'}>
                     {business.status === 'active' ? 'Open' : 'Closed'}
                   </Badge>
-                </div>
-                
+              </div>
+              
                 {business.price_range && (
                   <div>
                     <div className="text-sm text-gray-500">Price Range</div>
                     <div className="text-sm font-medium capitalize">{business.price_range}</div>
-                  </div>
+                        </div>
                 )}
 
                 {business.created_at && (
@@ -403,7 +403,7 @@ const BusinessDetails = () => {
                     <div className="text-sm text-gray-500">Member Since</div>
                     <div className="text-sm font-medium">
                       {new Date(business.created_at).toLocaleDateString()}
-                    </div>
+                      </div>
                   </div>
                 )}
               </CardContent>

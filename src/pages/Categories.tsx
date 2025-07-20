@@ -84,12 +84,12 @@ const Categories = () => {
                   <Badge variant="outline" className="text-xs">
                     Coming Soon
                   </Badge>
-                </div>
-                
+                  </div>
+                  
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  {category.name}
-                </h3>
-                
+                    {category.name}
+                  </h3>
+                  
                 <p className="text-sm text-gray-600 mb-6">
                   {category.description || `Find and book ${category.name.toLowerCase()} services in your area.`}
                 </p>
@@ -136,8 +136,8 @@ const Categories = () => {
                     </Button>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
           ))}
         </div>
 

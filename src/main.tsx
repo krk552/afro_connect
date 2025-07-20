@@ -20,9 +20,9 @@ if ('serviceWorker' in navigator) {
               // Optionally show update notification to user
             }
           });
-        }
+  }
       });
-    } catch (error) {
+} catch (error) {
       console.error('❌ Service Worker registration failed:', error);
     }
   });

@@ -100,7 +100,7 @@ const SearchResults = () => {
             <div>
               <h1 className="text-2xl font-bold text-gray-900">
                 {searchQuery ? `Search results for "${searchQuery}"` : "Search Businesses"}
-              </h1>
+          </h1>
               <p className="text-gray-600 mt-1">
                 Discover local businesses in Namibia
               </p>
@@ -195,7 +195,7 @@ const SearchResults = () => {
                     </Button>
                   </div>
                 </Card>
-              </div>
+          </div>
 
               {/* Popular Categories */}
               <div className="text-left max-w-md mx-auto">
@@ -251,7 +251,7 @@ const SearchResults = () => {
           /* This would show actual results when businesses exist */
           <div>
             <p>Business results would appear here once we have businesses registered.</p>
-          </div>
+        </div>
         )}
       </div>
     </div>

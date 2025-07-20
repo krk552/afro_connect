@@ -98,7 +98,7 @@ const BookingConfirmation = () => {
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back
           </Button>
-        </div>
+            </div>
 
         {/* Success Message */}
         <Card className="mb-6 border-green-200 bg-green-50">
@@ -112,28 +112,28 @@ const BookingConfirmation = () => {
         </Card>
 
         {/* Booking Details */}
-        <Card className="mb-6">
-          <CardHeader>
+          <Card className="mb-6">
+            <CardHeader>
             <CardTitle>Booking Details</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
+                <div>
                 <div className="text-sm text-gray-500 mb-1">Booking Number</div>
                 <div className="font-medium">{booking.booking_number}</div>
-              </div>
+                </div>
               <div>
                 <div className="text-sm text-gray-500 mb-1">Status</div>
                 <Badge variant={booking.status === 'pending' ? 'secondary' : 'default'}>
                   {booking.status === 'pending' ? 'Pending Confirmation' : booking.status}
                 </Badge>
+                </div>
               </div>
-            </div>
 
             <Separator />
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
+                <div>
                 <div className="text-sm text-gray-500 mb-1">Date</div>
                 <div className="flex items-center gap-2">
                   <Calendar className="w-4 h-4 text-gray-400" />
@@ -146,15 +146,15 @@ const BookingConfirmation = () => {
                     })}
                   </span>
                 </div>
-              </div>
-              <div>
+                </div>
+                <div>
                 <div className="text-sm text-gray-500 mb-1">Time</div>
                 <div className="flex items-center gap-2">
                   <Clock className="w-4 h-4 text-gray-400" />
                   <span className="font-medium">{booking.booking_time}</span>
                 </div>
+                </div>
               </div>
-            </div>
 
             {booking.duration_minutes && (
               <div>
@@ -167,7 +167,7 @@ const BookingConfirmation = () => {
               <div>
                 <div className="text-sm text-gray-500 mb-1">Special Requests</div>
                 <div className="text-sm bg-gray-50 p-3 rounded-lg">{booking.notes}</div>
-              </div>
+                </div>
             )}
           </CardContent>
         </Card>
@@ -179,7 +179,7 @@ const BookingConfirmation = () => {
               <CardTitle>Business Information</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div>
+                <div>
                 <h3 className="font-semibold text-gray-900 mb-2">{booking.businesses.name}</h3>
                 <div className="space-y-2 text-sm text-gray-600">
                   {booking.businesses.street_address && (
@@ -235,7 +235,7 @@ const BookingConfirmation = () => {
             <CardTitle>Your Information</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            <div>
+                  <div>
               <div className="text-sm text-gray-500 mb-1">Name</div>
               <div className="font-medium">{booking.customer_name}</div>
             </div>
@@ -250,35 +250,35 @@ const BookingConfirmation = () => {
                 <div className="text-sm text-gray-500 mb-1">Email</div>
                 <div className="font-medium">{booking.customer_email}</div>
               </div>
-            )}
-          </CardContent>
-        </Card>
+              )}
+            </CardContent>
+          </Card>
 
-        {/* Action Buttons */}
+          {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-3">
           <Button 
             className="flex-1 bg-afro-orange hover:bg-afro-orange/90"
             onClick={() => navigate('/bookings')}
           >
             View All Bookings
-          </Button>
+            </Button>
           <Button 
             variant="outline" 
             className="flex-1"
             onClick={handleDownload}
           >
-            <Download className="w-4 h-4 mr-2" />
+              <Download className="w-4 h-4 mr-2" />
             Download
-          </Button>
+            </Button>
           <Button 
             variant="outline" 
             className="flex-1"
             onClick={handleShare}
           >
-            <Share2 className="w-4 h-4 mr-2" />
-            Share
-          </Button>
-        </div>
+              <Share2 className="w-4 h-4 mr-2" />
+              Share
+            </Button>
+          </div>
 
         {/* Important Information */}
         <Card className="mt-6 border-blue-200 bg-blue-50">
@@ -290,8 +290,8 @@ const BookingConfirmation = () => {
               <li>• Contact the business directly for any changes</li>
               <li>• You'll receive a reminder 24 hours before your appointment</li>
             </ul>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
       </div>
     </div>
   );

@@ -10,7 +10,7 @@ import {
   User, 
   MapPin, 
   CheckCircle, 
-  ArrowRight,
+  ArrowRight, 
   Sparkles
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -63,7 +63,7 @@ const OnboardingPage = () => {
           first_name: formData.firstName.trim(),
           last_name: formData.lastName.trim(),
           phone: formData.phone.trim() || null,
-          location_city: formData.location,
+        location_city: formData.location,
           role: 'customer',
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
@@ -93,7 +93,7 @@ const OnboardingPage = () => {
     }
   };
 
-  return (
+        return (
     <div className="min-h-screen bg-gradient-to-br from-afro-orange/5 via-white to-afro-blue/5 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Header */}
@@ -106,9 +106,9 @@ const OnboardingPage = () => {
           </h1>
           <p className="text-gray-600">
             Let's get you set up in just a minute
-          </p>
-        </div>
-
+              </p>
+            </div>
+            
         {/* Quick Setup Form */}
         <Card className="border-0 shadow-lg">
           <CardContent className="p-6">
@@ -144,7 +144,7 @@ const OnboardingPage = () => {
                   />
                 </div>
               </div>
-
+              
               {/* Phone */}
               <div>
                 <Label htmlFor="phone" className="text-sm font-medium text-gray-700">
@@ -159,7 +159,7 @@ const OnboardingPage = () => {
                   className="mt-1"
                 />
               </div>
-
+              
               {/* Location */}
               <div>
                 <Label htmlFor="location" className="text-sm font-medium text-gray-700">
@@ -228,8 +228,8 @@ const OnboardingPage = () => {
               <span>Quick booking</span>
             </div>
           </div>
-        </div>
-      </div>
+          </div>
+          </div>
     </div>
   );
 };

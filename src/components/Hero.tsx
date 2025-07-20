@@ -14,7 +14,7 @@ const Hero = () => {
       navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
     }
   };
-
+  
   // Realistic launch benefits - no fake numbers
   const launchBenefits = [
     { icon: Rocket, label: "Launching in Namibia" },
@@ -96,7 +96,7 @@ const Hero = () => {
                   </div>
                   <Button 
                     type="submit" 
-                    size="lg"
+                    size="lg" 
                     className="bg-afro-yellow hover:bg-afro-yellow/90 text-black font-semibold px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
                   >
                     Search
@@ -105,7 +105,7 @@ const Hero = () => {
               </div>
             </div>
           </form>
-
+          
           {/* Call to action for new platform */}
           <div className="mb-8 animate-slide-in delay-600">
             <p className="text-white/80 text-sm mb-4">Join us in building Namibia's local business community:</p>
@@ -115,7 +115,7 @@ const Hero = () => {
               <span>• Connect with your community</span>
             </div>
           </div>
-
+          
           {/* Business owner CTA */}
           <div className="flex flex-wrap justify-center gap-4 text-white/80 animate-slide-in delay-700">
             <div className="text-center">
